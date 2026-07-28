@@ -1,236 +1,551 @@
+// Mock Data for Development (until backend is ready)
+import type {
+  Lead,
+  Campaign,
+  Workflow,
+  Opportunity,
+  Activity,
+  DashboardMetrics,
+  User,
+} from "./types";
+
 /**
- * Mock Data for Frontend Development
- * This file contains sample data to use while backend is being developed
+ * Mock Users
  */
-
-import type { User, Lead, Campaign, Opportunity, Activity } from "@/types";
-
 export const mockUsers: User[] = [
   {
-    id: "1",
-    email: "john.doe@example.com",
-    name: "John Doe",
-    avatar: "https://ui-avatars.com/api/?name=John+Doe",
-    role: "user",
-    createdAt: "2026-01-15T10:00:00Z",
-    updatedAt: "2026-01-15T10:00:00Z",
-  },
-  {
-    id: "2",
-    email: "jane.smith@example.com",
-    name: "Jane Smith",
-    avatar: "https://ui-avatars.com/api/?name=Jane+Smith",
-    role: "user",
-    createdAt: "2026-01-20T10:00:00Z",
-    updatedAt: "2026-01-20T10:00:00Z",
-  },
-];
-
-export const mockLeads: Lead[] = [
-  {
-    id: "1",
-    firstName: "Alice",
+    id: "user-1",
+    firstName: "Sarah",
     lastName: "Johnson",
-    email: "alice.johnson@company.com",
-    phone: "+1 (555) 123-4567",
-    company: "Tech Corp",
-    status: "new",
-    source: "Website",
-    tags: ["Enterprise", "High Priority"],
-    score: 85,
-    assignedTo: "1",
-    createdAt: "2026-02-01T10:00:00Z",
-    updatedAt: "2026-02-01T10:00:00Z",
+    email: "sarah@blumblast.com",
+    role: "admin",
+    timezone: "America/New_York",
+    isActive: true,
+    createdAt: new Date("2026-01-15"),
+    updatedAt: new Date("2026-07-20"),
   },
   {
-    id: "2",
-    firstName: "Bob",
-    lastName: "Williams",
-    email: "bob.williams@startup.io",
-    phone: "+1 (555) 234-5678",
-    company: "Startup Inc",
-    status: "contacted",
-    source: "LinkedIn",
-    tags: ["SMB"],
-    score: 65,
-    assignedTo: "2",
-    createdAt: "2026-02-02T10:00:00Z",
-    updatedAt: "2026-02-03T10:00:00Z",
+    id: "user-2",
+    firstName: "Michael",
+    lastName: "Chen",
+    email: "michael@blumblast.com",
+    role: "manager",
+    timezone: "America/Los_Angeles",
+    isActive: true,
+    createdAt: new Date("2026-02-01"),
+    updatedAt: new Date("2026-07-22"),
   },
   {
-    id: "3",
-    firstName: "Carol",
-    lastName: "Davis",
-    email: "carol.davis@business.com",
-    phone: "+1 (555) 345-6789",
-    company: "Business Solutions",
-    status: "qualified",
-    source: "Referral",
-    tags: ["Enterprise", "Decision Maker"],
-    score: 92,
-    assignedTo: "1",
-    createdAt: "2026-02-03T10:00:00Z",
-    updatedAt: "2026-02-05T10:00:00Z",
+    id: "user-3",
+    firstName: "Emma",
+    lastName: "Rodriguez",
+    email: "emma@blumblast.com",
+    role: "agent",
+    timezone: "America/Chicago",
+    isActive: true,
+    createdAt: new Date("2026-03-10"),
+    updatedAt: new Date("2026-07-23"),
   },
 ];
 
-export const mockCampaigns: Campaign[] = [
-  {
-    id: "1",
-    name: "Welcome Email Series",
-    type: "email",
-    status: "active",
-    subject: "Welcome to BlumBlast!",
-    content: "Thank you for signing up...",
-    targetAudience: {
-      segmentId: "new-users",
-    },
-    metrics: {
-      sent: 1250,
-      delivered: 1200,
-      opened: 720,
-      clicked: 240,
-      converted: 48,
-    },
-    createdBy: "1",
-    createdAt: "2026-01-10T10:00:00Z",
-    updatedAt: "2026-02-01T10:00:00Z",
-  },
-  {
-    id: "2",
-    name: "Product Launch SMS",
-    type: "sms",
-    status: "completed",
-    content: "New feature alert! Check it out now.",
-    targetAudience: {
-      segmentId: "active-users",
-    },
-    metrics: {
-      sent: 500,
-      delivered: 495,
-      opened: 450,
-      clicked: 180,
-      converted: 35,
-    },
-    createdBy: "2",
-    createdAt: "2026-01-20T10:00:00Z",
-    updatedAt: "2026-01-25T10:00:00Z",
-  },
-  {
-    id: "3",
-    name: "Re-engagement Campaign",
-    type: "email",
-    status: "draft",
-    subject: "We miss you!",
-    content: "Come back and see what's new...",
-    targetAudience: {
-      segmentId: "inactive-users",
-    },
-    metrics: {
-      sent: 0,
-      delivered: 0,
-      opened: 0,
-      clicked: 0,
-      converted: 0,
-    },
-    createdBy: "1",
-    createdAt: "2026-02-05T10:00:00Z",
-    updatedAt: "2026-02-05T10:00:00Z",
-  },
-];
-
-export const mockOpportunities: Opportunity[] = [
-  {
-    id: "1",
-    title: "Enterprise Deal - Tech Corp",
-    leadId: "1",
-    stage: "proposal",
-    value: 50000,
-    probability: 75,
-    expectedCloseDate: "2026-03-15",
-    assignedTo: "1",
-    notes: "Strong interest, waiting for final approval",
-    createdAt: "2026-02-01T10:00:00Z",
-    updatedAt: "2026-02-10T10:00:00Z",
-  },
-  {
-    id: "2",
-    title: "SMB Package - Startup Inc",
-    leadId: "2",
-    stage: "negotiation",
-    value: 15000,
-    probability: 60,
-    expectedCloseDate: "2026-02-28",
-    assignedTo: "2",
-    notes: "Price negotiation in progress",
-    createdAt: "2026-02-03T10:00:00Z",
-    updatedAt: "2026-02-12T10:00:00Z",
-  },
-];
-
-export const mockActivities: Activity[] = [
-  {
-    id: "1",
-    type: "email",
-    title: "Sent proposal to Tech Corp",
-    description: "Enterprise package proposal sent",
-    relatedTo: {
-      type: "opportunity",
-      id: "1",
-    },
-    createdBy: "1",
-    createdAt: "2026-02-10T14:30:00Z",
-  },
-  {
-    id: "2",
-    type: "call",
-    title: "Follow-up call with Bob Williams",
-    description: "Discussed pricing and implementation timeline",
-    relatedTo: {
-      type: "lead",
-      id: "2",
-    },
-    createdBy: "2",
-    createdAt: "2026-02-12T10:15:00Z",
-  },
-  {
-    id: "3",
-    type: "note",
-    title: "Decision maker meeting scheduled",
-    description: "Carol Davis agreed to demo on Feb 20",
-    relatedTo: {
-      type: "lead",
-      id: "3",
-    },
-    createdBy: "1",
-    createdAt: "2026-02-13T16:45:00Z",
-  },
-];
-
-export const mockDashboardMetrics = {
-  newLeadsToday: 12,
-  totalLeads: 1247,
-  activeCampaigns: 5,
-  totalCampaigns: 23,
-  openDeals: 8,
-  totalDealsValue: 125000,
-  conversionRate: 3.8,
-  revenueThisMonth: 45000,
+/**
+ * Mock Dashboard Metrics
+ */
+export const mockDashboardMetrics: DashboardMetrics = {
+  newLeadsToday: 47,
+  newLeadsChange: 23,
+  activeCampaigns: 8,
+  activeCampaignsChange: 2,
+  hotLeads: 12,
+  hotLeadsChange: 15,
+  revenueThisMonth: 125000,
+  revenueChange: 18,
+  avgLeadScore: 68,
+  conversionRate: 12.5,
 };
 
-export const mockCampaignPerformanceData = [
-  { month: "Jan", email: 65, sms: 45, push: 30 },
-  { month: "Feb", email: 72, sms: 52, push: 35 },
-  { month: "Mar", email: 68, sms: 48, push: 32 },
-  { month: "Apr", email: 78, sms: 55, push: 40 },
-  { month: "May", email: 85, sms: 62, push: 45 },
-  { month: "Jun", email: 90, sms: 68, push: 50 },
+/**
+ * Mock Leads
+ */
+export const mockLeads: Lead[] = [
+  {
+    id: "lead-1",
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@techcorp.com",
+    phone: "+1-555-0123",
+    company: "TechCorp Solutions",
+    title: "CTO",
+    source: "email_inbound",
+    status: "engaged",
+    score: 87,
+    tags: ["enterprise", "tech", "high-value"],
+    customFields: {
+      industry: "Technology",
+      employees: "50-200",
+      website: "https://techcorp.example.com",
+    },
+    assignedTo: "user-1",
+    createdAt: new Date("2026-07-20T10:30:00"),
+    updatedAt: new Date("2026-07-24T14:22:00"),
+    lastActivityAt: new Date("2026-07-24T14:22:00"),
+  },
+  {
+    id: "lead-2",
+    firstName: "Jane",
+    lastName: "Smith",
+    email: "jane.smith@retailco.com",
+    phone: "+1-555-0124",
+    company: "RetailCo",
+    title: "Marketing Director",
+    source: "sms_inbound",
+    status: "qualified",
+    score: 92,
+    tags: ["retail", "hot-lead", "ready-to-buy"],
+    customFields: {
+      industry: "Retail",
+      employees: "200-500",
+      budget: "$50k-$100k",
+    },
+    assignedTo: "user-2",
+    createdAt: new Date("2026-07-22T09:15:00"),
+    updatedAt: new Date("2026-07-24T11:45:00"),
+    lastActivityAt: new Date("2026-07-24T11:45:00"),
+  },
+  {
+    id: "lead-3",
+    firstName: "Robert",
+    lastName: "Williams",
+    email: "robert.w@healthcare-inc.com",
+    phone: "+1-555-0125",
+    company: "HealthCare Inc",
+    title: "Operations Manager",
+    source: "csv_import",
+    status: "new",
+    score: 45,
+    tags: ["healthcare", "imported"],
+    customFields: {
+      industry: "Healthcare",
+      employees: "20-50",
+    },
+    assignedTo: "user-3",
+    createdAt: new Date("2026-07-23T14:20:00"),
+    updatedAt: new Date("2026-07-23T14:20:00"),
+    lastActivityAt: new Date("2026-07-23T14:20:00"),
+  },
+  {
+    id: "lead-4",
+    firstName: "Lisa",
+    lastName: "Anderson",
+    email: "lisa.anderson@financesolutions.com",
+    phone: "+1-555-0126",
+    company: "Finance Solutions LLC",
+    title: "VP of Sales",
+    source: "form",
+    status: "engaged",
+    score: 81,
+    tags: ["finance", "warm-lead"],
+    customFields: {
+      industry: "Financial Services",
+      employees: "100-200",
+      revenue: "$5M-$10M",
+    },
+    assignedTo: "user-1",
+    createdAt: new Date("2026-07-21T16:45:00"),
+    updatedAt: new Date("2026-07-24T09:30:00"),
+    lastActivityAt: new Date("2026-07-24T09:30:00"),
+  },
+  {
+    id: "lead-5",
+    firstName: "David",
+    lastName: "Martinez",
+    email: "d.martinez@edutech.com",
+    phone: "+1-555-0127",
+    company: "EduTech Platform",
+    title: "CEO",
+    source: "referral",
+    status: "qualified",
+    score: 95,
+    tags: ["education", "executive", "hot-lead"],
+    customFields: {
+      industry: "Education Technology",
+      employees: "10-20",
+      funding: "Series A",
+    },
+    assignedTo: "user-2",
+    createdAt: new Date("2026-07-19T11:00:00"),
+    updatedAt: new Date("2026-07-24T13:15:00"),
+    lastActivityAt: new Date("2026-07-24T13:15:00"),
+  },
 ];
 
+/**
+ * Mock Campaigns
+ */
+export const mockCampaigns: Campaign[] = [
+  {
+    id: "campaign-1",
+    name: "Summer Sale 2026",
+    channel: "email",
+    status: "sent",
+    subject: "🔥 Summer Sale: 50% Off for New Customers",
+    content: "<h1>Summer Sale</h1><p>Get 50% off...</p>",
+    recipientCount: 2456,
+    sentCount: 2456,
+    deliveredCount: 2398,
+    openedCount: 1034,
+    clickedCount: 287,
+    unsubscribedCount: 8,
+    bouncedCount: 58,
+    sentAt: new Date("2026-07-15T10:00:00"),
+    createdBy: "user-1",
+    createdAt: new Date("2026-07-14T15:30:00"),
+    updatedAt: new Date("2026-07-24T08:00:00"),
+  },
+  {
+    id: "campaign-2",
+    name: "Product Launch - Q3",
+    channel: "both",
+    status: "scheduled",
+    subject: "New Feature Alert: Boost Your Productivity",
+    content: "Check out our new features...",
+    recipientCount: 1823,
+    sentCount: 0,
+    deliveredCount: 0,
+    openedCount: 0,
+    clickedCount: 0,
+    unsubscribedCount: 0,
+    bouncedCount: 0,
+    scheduledFor: new Date("2026-07-26T09:00:00"),
+    createdBy: "user-2",
+    createdAt: new Date("2026-07-23T11:20:00"),
+    updatedAt: new Date("2026-07-24T10:15:00"),
+  },
+  {
+    id: "campaign-3",
+    name: "Re-engagement Campaign",
+    channel: "sms",
+    status: "sending",
+    content: "We miss you! Come back for an exclusive 30% discount.",
+    recipientCount: 856,
+    sentCount: 423,
+    deliveredCount: 415,
+    openedCount: 0, // SMS doesn't track opens
+    clickedCount: 89,
+    unsubscribedCount: 3,
+    bouncedCount: 8,
+    createdBy: "user-1",
+    createdAt: new Date("2026-07-24T08:00:00"),
+    updatedAt: new Date("2026-07-24T14:30:00"),
+  },
+];
+
+/**
+ * Mock Workflows
+ */
+export const mockWorkflows: Workflow[] = [
+  {
+    id: "workflow-1",
+    name: "Welcome Series - New Leads",
+    description: "3-email welcome sequence for new leads",
+    status: "active",
+    nodes: [
+      {
+        id: "node-1",
+        type: "trigger",
+        label: "New Lead Created",
+        config: { event: "lead_created" },
+        position: { x: 100, y: 100 },
+        connections: ["node-2"],
+      },
+      {
+        id: "node-2",
+        type: "action",
+        label: "Send Welcome Email",
+        config: { actionType: "send_email", templateId: "welcome-1" },
+        position: { x: 100, y: 200 },
+        connections: ["node-3"],
+      },
+      {
+        id: "node-3",
+        type: "wait",
+        label: "Wait 2 Days",
+        config: { duration: 2, unit: "days" },
+        position: { x: 100, y: 300 },
+        connections: ["node-4"],
+      },
+      {
+        id: "node-4",
+        type: "condition",
+        label: "Email Opened?",
+        config: { field: "email_opened", operator: "equals", value: true },
+        position: { x: 100, y: 400 },
+        connections: ["node-5", "node-6"],
+      },
+      {
+        id: "node-5",
+        type: "action",
+        label: "Send Follow-up Email",
+        config: { actionType: "send_email", templateId: "follow-up-1" },
+        position: { x: 50, y: 500 },
+        connections: [],
+      },
+      {
+        id: "node-6",
+        type: "action",
+        label: "Send Re-engagement Email",
+        config: { actionType: "send_email", templateId: "reengagement-1" },
+        position: { x: 150, y: 500 },
+        connections: [],
+      },
+    ],
+    enrolledCount: 1247,
+    completedCount: 856,
+    activeCount: 391,
+    createdBy: "user-1",
+    createdAt: new Date("2026-06-01T10:00:00"),
+    updatedAt: new Date("2026-07-20T15:30:00"),
+  },
+  {
+    id: "workflow-2",
+    name: "Lead Scoring Auto-Assign",
+    description: "Automatically assign hot leads to sales team",
+    status: "active",
+    nodes: [
+      {
+        id: "node-1",
+        type: "trigger",
+        label: "Lead Score > 80",
+        config: { event: "lead_score_changed", threshold: 80 },
+        position: { x: 100, y: 100 },
+        connections: ["node-2"],
+      },
+      {
+        id: "node-2",
+        type: "action",
+        label: "Add Tag: Hot Lead",
+        config: { actionType: "add_tag", tag: "hot-lead" },
+        position: { x: 100, y: 200 },
+        connections: ["node-3"],
+      },
+      {
+        id: "node-3",
+        type: "action",
+        label: "Assign to Sales Team",
+        config: { actionType: "assign", userId: "user-2" },
+        position: { x: 100, y: 300 },
+        connections: [],
+      },
+    ],
+    enrolledCount: 234,
+    completedCount: 234,
+    activeCount: 0,
+    createdBy: "user-2",
+    createdAt: new Date("2026-05-15T09:00:00"),
+    updatedAt: new Date("2026-07-23T11:20:00"),
+  },
+];
+
+/**
+ * Mock Opportunities
+ */
+export const mockOpportunities: Opportunity[] = [
+  {
+    id: "opp-1",
+    leadId: "lead-2",
+    title: "RetailCo - Marketing Automation Platform",
+    value: 75000,
+    stage: "proposal",
+    probability: 70,
+    assignedTo: "user-2",
+    expectedCloseDate: new Date("2026-08-15"),
+    notes: [
+      "Initial call went well, they're interested in multi-channel campaigns",
+      "Sent proposal on 7/20, waiting for feedback",
+    ],
+    createdAt: new Date("2026-07-18T10:30:00"),
+    updatedAt: new Date("2026-07-24T09:45:00"),
+  },
+  {
+    id: "opp-2",
+    leadId: "lead-5",
+    title: "EduTech Platform - Enterprise Plan",
+    value: 120000,
+    stage: "negotiation",
+    probability: 85,
+    assignedTo: "user-1",
+    expectedCloseDate: new Date("2026-08-01"),
+    businessBlumAccountId: undefined,
+    notes: [
+      "CEO is very interested, discussing custom pricing",
+      "Need to schedule final demo with their tech team",
+    ],
+    createdAt: new Date("2026-07-12T14:20:00"),
+    updatedAt: new Date("2026-07-24T11:30:00"),
+  },
+  {
+    id: "opp-3",
+    leadId: "lead-1",
+    title: "TechCorp Solutions - CRM Integration",
+    value: 50000,
+    stage: "contacted",
+    probability: 40,
+    assignedTo: "user-1",
+    expectedCloseDate: new Date("2026-09-01"),
+    notes: ["Initial outreach complete, scheduled discovery call for next week"],
+    createdAt: new Date("2026-07-20T16:00:00"),
+    updatedAt: new Date("2026-07-22T10:15:00"),
+  },
+  {
+    id: "opp-4",
+    leadId: "lead-4",
+    title: "Finance Solutions - BusinessBlum Premium",
+    value: 85000,
+    stage: "closed_won",
+    probability: 100,
+    assignedTo: "user-2",
+    closedAt: new Date("2026-07-22T15:30:00"),
+    businessBlumAccountId: "bb-account-123",
+    notes: [
+      "Deal closed! Customer signed contract",
+      "BusinessBlum account created successfully",
+    ],
+    createdAt: new Date("2026-07-05T09:00:00"),
+    updatedAt: new Date("2026-07-22T15:30:00"),
+  },
+];
+
+/**
+ * Mock Activities
+ */
+export const mockActivities: Activity[] = [
+  {
+    id: "activity-1",
+    type: "campaign_sent",
+    title: "Campaign Sent: Re-engagement Campaign",
+    description: "Sent to 856 recipients via SMS",
+    entityId: "campaign-3",
+    entityType: "campaign",
+    userId: "user-1",
+    metadata: {
+      campaignName: "Re-engagement Campaign",
+      channel: "sms",
+      recipients: 856,
+    },
+    createdAt: new Date("2026-07-24T08:00:00"),
+  },
+  {
+    id: "activity-2",
+    type: "lead_created",
+    title: "New Lead Added",
+    description: "John Doe from TechCorp Solutions",
+    entityId: "lead-1",
+    entityType: "lead",
+    metadata: {
+      leadName: "John Doe",
+      company: "TechCorp Solutions",
+      source: "email_inbound",
+    },
+    createdAt: new Date("2026-07-20T10:30:00"),
+  },
+  {
+    id: "activity-3",
+    type: "opportunity_closed",
+    title: "Deal Closed Won",
+    description: "Finance Solutions - BusinessBlum Premium ($85,000)",
+    entityId: "opp-4",
+    entityType: "opportunity",
+    userId: "user-2",
+    metadata: {
+      value: 85000,
+      businessBlumAccountId: "bb-account-123",
+    },
+    createdAt: new Date("2026-07-22T15:30:00"),
+  },
+  {
+    id: "activity-4",
+    type: "workflow_triggered",
+    title: "Workflow Started",
+    description: "47 leads enrolled in 'Welcome Series - New Leads'",
+    entityId: "workflow-1",
+    entityType: "workflow",
+    metadata: {
+      workflowName: "Welcome Series - New Leads",
+      enrolledCount: 47,
+    },
+    createdAt: new Date("2026-07-24T06:00:00"),
+  },
+  {
+    id: "activity-5",
+    type: "campaign_opened",
+    title: "High Engagement Detected",
+    description: "Summer Sale campaign: 1,034 opens (43% open rate)",
+    entityId: "campaign-1",
+    entityType: "campaign",
+    metadata: {
+      campaignName: "Summer Sale 2026",
+      opens: 1034,
+      openRate: 43,
+    },
+    createdAt: new Date("2026-07-15T14:22:00"),
+  },
+];
+
+/**
+ * Helper function to get a random subset of leads
+ */
+export function getRandomLeads(count: number = 5): Lead[] {
+  const shuffled = [...mockLeads].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, Math.min(count, mockLeads.length));
+}
+
+/**
+ * Helper function to filter leads by status
+ */
+export function getLeadsByStatus(status: Lead["status"]): Lead[] {
+  return mockLeads.filter((lead) => lead.status === status);
+}
+
+/**
+ * Helper function to get hot leads (score > 80)
+ */
+export function getHotLeads(): Lead[] {
+  return mockLeads.filter((lead) => lead.score > 80);
+}
+
+/**
+ * Helper function to get opportunities by stage
+ */
+export function getOpportunitiesByStage(stage: Opportunity["stage"]): Opportunity[] {
+  return mockOpportunities.filter((opp) => opp.stage === stage);
+}
+
+/**
+ * Helper function to get recent activities
+ */
+export function getRecentActivities(count: number = 10): Activity[] {
+  return mockActivities
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, count);
+}
+
+/**
+ * Mock Campaign Performance Data (for analytics charts)
+ */
+export const mockCampaignPerformanceData = [
+  { date: "Week 1", opens: 245, clicks: 89, conversions: 23 },
+  { date: "Week 2", opens: 312, clicks: 124, conversions: 34 },
+  { date: "Week 3", opens: 287, clicks: 98, conversions: 28 },
+  { date: "Week 4", opens: 356, clicks: 142, conversions: 41 },
+];
+
+/**
+ * Mock Lead Source Data (for analytics charts)
+ */
 export const mockLeadSourceData = [
-  { source: "Website", count: 450, percentage: 36 },
-  { source: "LinkedIn", count: 320, percentage: 26 },
-  { source: "Referral", count: 280, percentage: 22 },
-  { source: "Direct", count: 150, percentage: 12 },
-  { source: "Other", count: 47, percentage: 4 },
+  { source: "Email Inbound", count: 456, percentage: 42 },
+  { source: "SMS Inbound", count: 234, percentage: 22 },
+  { source: "CSV Import", count: 189, percentage: 17 },
+  { source: "Form Submission", count: 123, percentage: 11 },
+  { source: "Other", count: 87, percentage: 8 },
 ];

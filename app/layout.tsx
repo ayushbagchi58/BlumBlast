@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,20 +16,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BlumBlast - Marketing Automation Platform",
+  title: "BlumBlast - Customer Acquisition Engine for BusinessBlum",
   description:
-    "Transform your marketing with intelligent automation. Launch multi-channel campaigns, automate lead nurturing, and close more deals faster with BlumBlast.",
+    "Centralized platform to ingest leads from email and SMS, engage at scale with bulk messaging, and convert prospects into BusinessBlum customers through intelligent automation.",
   keywords: [
-    "marketing automation",
-    "lead generation",
-    "email campaigns",
+    "lead management",
     "customer acquisition",
-    "marketing platform",
+    "marketing automation",
+    "email campaigns",
+    "SMS campaigns",
+    "lead nurturing",
+    "sales pipeline",
+    "businessblum",
+    "crm automation",
   ],
-  authors: [{ name: "BlumBlast" }],
+  authors: [{ name: "BlumBlast Team" }],
   openGraph: {
-    title: "BlumBlast - Marketing Automation Platform",
-    description: "Transform your marketing with intelligent automation",
+    title: "BlumBlast - Customer Acquisition Engine",
+    description: "Transform leads into BusinessBlum customers with intelligent automation",
     type: "website",
   },
 };
@@ -46,6 +51,13 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col" suppressHydrationWarning>
         {children}
+        <Toaster 
+          position="top-right" 
+          richColors 
+          closeButton
+          expand={false}
+          duration={4000}
+        />
       </body>
     </html>
   );

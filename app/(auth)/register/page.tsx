@@ -3,19 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Input, Button, Card, Toast } from "@/components/ui";
-import { ToastContainer } from "@/components/ui/Toast";
+import { Input, Button, Card } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
 import { Mail, Lock, User, Eye, EyeOff, Building, ArrowRight, Check, X } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastType, setToastType] = useState<"success" | "error">("success");
-  const [toastMessage, setToastMessage] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -218,26 +215,33 @@ export default function RegisterPage() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setToastType("error");
-      setToastMessage("Please fix the errors in the form");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      toast.error("Please fix the errors in the form");
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setToastType("success");
-      setToastMessage("Account created successfully! Redirecting...");
-      setShowToast(true);
-
-      setTimeout(() => {
-        router.push(ROUTES.DASHBOARD);
-      }, 1000);
-    }, 1500);
+    // Simulate API call with toast promise
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ name: formData.name });
+        }, 1500);
+      }),
+      {
+        loading: "Creating your account...",
+        success: () => {
+          setTimeout(() => {
+            router.push(ROUTES.DASHBOARD);
+          }, 500);
+          return "Account created successfully!";
+        },
+        error: "Registration failed. Please try again.",
+        finally: () => {
+          setIsLoading(false);
+        },
+      }
+    );
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -466,17 +470,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </Card>
-
-      <ToastContainer>
-        {showToast && (
-          <Toast
-            type={toastType}
-            title={toastType === "success" ? "Account Created!" : "Validation Error"}
-            message={toastMessage}
-            onClose={() => setShowToast(false)}
-          />
-        )}
-      </ToastContainer>
     </>
   );
 }

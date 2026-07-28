@@ -3,19 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Input, Button, Card, Toast } from "@/components/ui";
-import { ToastContainer } from "@/components/ui/Toast";
+import { Input, Button, Card } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastType, setToastType] = useState<"success" | "error">("success");
-  const [toastMessage, setToastMessage] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -68,26 +65,33 @@ export default function LoginPage() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      setToastType("error");
-      setToastMessage("Please fix the errors in the form");
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
+      toast.error("Please fix the errors in the form");
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setToastType("success");
-      setToastMessage("Login successful! Redirecting...");
-      setShowToast(true);
-
-      setTimeout(() => {
-        router.push(ROUTES.DASHBOARD);
-      }, 1000);
-    }, 1500);
+    // Simulate API call with toast promise
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ email: trimmedEmail });
+        }, 1500);
+      }),
+      {
+        loading: "Signing in...",
+        success: () => {
+          setTimeout(() => {
+            router.push(ROUTES.DASHBOARD);
+          }, 500);
+          return "Login successful! Redirecting...";
+        },
+        error: "Login failed. Please try again.",
+        finally: () => {
+          setIsLoading(false);
+        },
+      }
+    );
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -227,17 +231,6 @@ export default function LoginPage() {
           </p>
         </div>
       </Card>
-
-      <ToastContainer>
-        {showToast && (
-          <Toast
-            type={toastType}
-            title={toastType === "success" ? "Login Successful!" : "Validation Error"}
-            message={toastMessage}
-            onClose={() => setShowToast(false)}
-          />
-        )}
-      </ToastContainer>
     </>
   );
 }

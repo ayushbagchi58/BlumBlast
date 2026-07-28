@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui";
+import { toast } from "sonner";
 
 export default function ContactPage() {
   return (
@@ -210,7 +211,33 @@ function ContactFormSection() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => {
+          console.log("Form submitted:", formData);
+          resolve(formData);
+        }, 1500);
+      }),
+      {
+        loading: "Sending your message...",
+        success: () => {
+          // Reset form
+          setFormData({
+            firstName: "",
+            lastName: "",
+            email: "",
+            company: "",
+            phone: "",
+            employees: "",
+            message: "",
+            newsletter: false,
+          });
+          return "Message sent successfully! We'll get back to you within 2 hours.";
+        },
+        error: "Failed to send message. Please try again.",
+      }
+    );
   };
 
   const handleChange = (

@@ -10,7 +10,7 @@ import { useLocalStorage } from "@/hooks";
 export default function SettingsPage() {
   const currentUser = mockUsers[0];
   const [savedProfile, setSavedProfile] = useLocalStorage("blum-blast-profile", {
-    name: currentUser.name,
+    name: `${currentUser.firstName} ${currentUser.lastName}`,
     email: currentUser.email,
     phone: "",
     company: "",
@@ -306,14 +306,11 @@ export default function SettingsPage() {
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600">
                           <span className="text-sm font-semibold text-white">
-                            {user.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
+                          <p className="font-medium text-gray-900">{user.firstName} {user.lastName}</p>
                           <p className="text-sm text-gray-600">{user.email}</p>
                         </div>
                       </div>

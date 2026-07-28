@@ -148,7 +148,7 @@ export default function Header() {
               {currentUser.avatar ? (
                 <img
                   src={currentUser.avatar}
-                  alt={currentUser.name}
+                  alt={`${currentUser.firstName} ${currentUser.lastName}`}
                   className="h-8 w-8 rounded-full"
                 />
               ) : (
@@ -157,7 +157,7 @@ export default function Header() {
                 </div>
               )}
               <div className="hidden text-left lg:block">
-                <p className="text-sm font-medium text-gray-900">{currentUser.name}</p>
+                <p className="text-sm font-medium text-gray-900">{currentUser.firstName} {currentUser.lastName}</p>
                 <p className="text-xs capitalize text-gray-500">{currentUser.role}</p>
               </div>
             </button>
@@ -166,7 +166,7 @@ export default function Header() {
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
                 <div className="border-b border-gray-200 px-4 py-2">
-                  <p className="truncate font-medium text-gray-900">{currentUser.name}</p>
+                  <p className="truncate font-medium text-gray-900">{currentUser.firstName} {currentUser.lastName}</p>
                   <p className="truncate text-sm text-gray-500">{currentUser.email}</p>
                 </div>
                 <Link
