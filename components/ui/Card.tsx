@@ -2,7 +2,7 @@ import { HTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "elevated" | "outlined";
+  variant?: "default" | "elevated" | "outlined" | "glass";
   padding?: "none" | "sm" | "md" | "lg";
 }
 
@@ -12,6 +12,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       default: "bg-white border border-gray-200",
       elevated: "bg-white shadow-md",
       outlined: "bg-white border-2 border-gray-300",
+      glass: "bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl",
     };
 
     const paddings = {

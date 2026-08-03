@@ -7,25 +7,34 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   helperText?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  variant?: "default" | "glass";
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    { className, type = "text", label, error, helperText, leftIcon, rightIcon, disabled, ...props },
+    { className, type = "text", label, error, helperText, leftIcon, rightIcon, disabled, variant = "default", ...props },
     ref
   ) => {
+    const isGlass = variant === "glass";
+    
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
+          <label className={cn(
+            "mb-1.5 block text-sm font-medium",
+            isGlass ? "text-white" : "text-gray-700"
+          )}>
             {label}
-            {props.required && <span className="ml-1 text-red-500">*</span>}
+            {props.required && <span className={cn("ml-1", isGlass ? "text-red-300" : "text-red-500")}>*</span>}
           </label>
         )}
 
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">{leftIcon}</div>
+            <div className={cn(
+              "absolute left-3 top-1/2 -translate-y-1/2",
+              isGlass ? "text-white/70" : "text-gray-400"
+            )}>{leftIcon}</div>
           )}
 
           <input
@@ -33,11 +42,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             type={type}
             disabled={disabled}
             className={cn(
-              "w-full rounded-lg border bg-white px-4 py-2.5 text-gray-900 transition-colors duration-200",
-              "placeholder:text-gray-400",
-              "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500",
-              "disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500",
-              error ? "border-red-500 focus:ring-red-500" : "border-gray-300 hover:border-gray-400",
+              "w-full rounded-lg border px-4 py-2.5 transition-colors duration-200",
+              isGlass
+                ? "bg-white/10 text-white placeholder:text-white/50 border-white/20 hover:border-white/30 focus:border-white/40 focus:bg-white/15 backdrop-blur-sm"
+                : "bg-white text-gray-900 placeholder:text-gray-400 border-gray-300 hover:border-gray-400",
+              "focus:border-transparent focus:outline-none focus:ring-2",
+              isGlass ? "focus:ring-blue-400/50" : "focus:ring-blue-500",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              error && (isGlass ? "border-red-300 focus:ring-red-400/50" : "border-red-500 focus:ring-red-500"),
               leftIcon && "pl-10",
               rightIcon && "pr-10",
               className
@@ -46,14 +58,20 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           />
 
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <div className={cn(
+              "absolute right-3 top-1/2 -translate-y-1/2",
+              isGlass ? "text-white/70" : "text-gray-400"
+            )}>
               {rightIcon}
             </div>
           )}
         </div>
 
         {error && (
-          <p className="mt-1.5 flex items-center gap-1 text-sm text-red-600">
+          <p className={cn(
+            "mt-1.5 flex items-center gap-1 text-sm",
+            isGlass ? "text-red-300" : "text-red-600"
+          )}>
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -65,7 +83,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           </p>
         )}
 
-        {helperText && !error && <p className="mt-1.5 text-sm text-gray-500">{helperText}</p>}
+        {helperText && !error && <p className={cn(
+          "mt-1.5 text-sm",
+          isGlass ? "text-white/80" : "text-gray-500"
+        )}>{helperText}</p>}
       </div>
     );
   }

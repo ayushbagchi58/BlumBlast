@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardBody, Tabs, Input, Button, Select, Toast } from "@/components/ui";
 import { ToastContainer } from "@/components/ui/Toast";
-import { User, Bell, Shield, CreditCard, Users, Zap, Save, Check } from "lucide-react";
+import { User, Bell, Shield, Users, Zap, Save, Check } from "lucide-react";
 import { mockUsers } from "@/lib/mockData";
 import { useState, useCallback, useMemo } from "react";
 import { useLocalStorage } from "@/hooks";
@@ -528,75 +528,6 @@ export default function SettingsPage() {
                     <p className="mt-1 text-sm text-gray-600">View your recent login activity</p>
                     <Button variant="outline" size="sm" className="mt-3">
                       View History
-                    </Button>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          </div>
-        ),
-      },
-      {
-        id: "billing",
-        label: "Billing",
-        icon: <CreditCard className="h-4 w-4" />,
-        content: (
-          <div className="space-y-4">
-            <Card className="animate-slideUp">
-              <CardHeader
-                title="Billing & Subscription"
-                subtitle="Manage your subscription and payment methods"
-              />
-              <CardBody>
-                <div className="space-y-4">
-                  <div
-                    className="animate-slideUp rounded-lg border-2 border-blue-200 bg-blue-50 p-6"
-                    style={{ animationDelay: "50ms" }}
-                  >
-                    <div className="mb-4 flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Pro Plan</h3>
-                        <p className="mt-1 text-sm text-gray-600">Billed monthly</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-gray-900">$49</p>
-                        <p className="text-sm text-gray-600">/month</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <Button variant="primary" size="sm">
-                        Upgrade Plan
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        Cancel Subscription
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div
-                    className="animate-slideUp rounded-lg border border-gray-200 bg-gray-50 p-4"
-                    style={{ animationDelay: "100ms" }}
-                  >
-                    <p className="font-medium text-gray-900">Payment Method</p>
-                    <div className="mt-2 flex items-center gap-3">
-                      <div className="flex h-8 w-12 items-center justify-center rounded bg-gradient-to-r from-blue-600 to-blue-400">
-                        <span className="text-xs font-bold text-white">VISA</span>
-                      </div>
-                      <span className="text-sm text-gray-600">•••• •••• •••• 4242</span>
-                    </div>
-                    <Button variant="outline" size="sm" className="mt-3">
-                      Update Payment
-                    </Button>
-                  </div>
-
-                  <div
-                    className="animate-slideUp rounded-lg border border-gray-200 bg-gray-50 p-4"
-                    style={{ animationDelay: "150ms" }}
-                  >
-                    <p className="font-medium text-gray-900">Billing History</p>
-                    <p className="mt-1 text-sm text-gray-600">View and download past invoices</p>
-                    <Button variant="outline" size="sm" className="mt-3">
-                      View Invoices
                     </Button>
                   </div>
                 </div>

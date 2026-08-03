@@ -91,10 +91,15 @@ export default function Sidebar() {
           className="flex items-center gap-2 lg:hidden"
           onClick={handleLinkClick}
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-600">
             <span className="text-lg font-bold text-white">B</span>
           </div>
-          <span className="text-xl font-bold text-gray-900">BlumBlast</span>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold text-gray-900">BlumBlast</span>
+            <span className="text-[10px] leading-tight text-gray-500">
+              Marketing & Lead Automation
+            </span>
+          </div>
         </Link>
 
         {/* Desktop: Show based on collapsed state */}
@@ -104,10 +109,15 @@ export default function Sidebar() {
             className="hidden items-center gap-2 lg:flex"
             onClick={handleLinkClick}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-600">
               <span className="text-lg font-bold text-white">B</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">BlumBlast</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-gray-900">BlumBlast</span>
+              <span className="text-[10px] leading-tight text-gray-500">
+                Marketing & Lead Automation
+              </span>
+            </div>
           </Link>
         )}
 
