@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardHeader, CardBody, Badge, Button } from "@/components/ui";
+import { Card, CardHeader, CardBody, Badge, Button, NextStepsCard } from "@/components/ui";
 import {
   mockDashboardMetrics,
   getHotLeads,
@@ -20,6 +20,7 @@ import {
   Eye,
   UserPlus,
   Send,
+  BarChart3,
 } from "lucide-react";
 import { useCountUp } from "@/hooks";
 import Link from "next/link";
@@ -403,6 +404,37 @@ export default function DashboardPage() {
           </div>
         </CardBody>
       </Card>
+
+      {/* Recommended Next Steps */}
+      <NextStepsCard
+        title="🚀 Recommended Next Steps"
+        steps={[
+          {
+            icon: Plus,
+            title: "Create Your First Campaign",
+            description: "Design and set up a campaign to reach your leads",
+            href: "/campaigns/new",
+          },
+          {
+            icon: Upload,
+            title: "Import Leads",
+            description: "Add leads who will receive your campaigns",
+            href: "/leads/import",
+          },
+          {
+            icon: Workflow,
+            title: "Set Up Automation",
+            description: "Create automated workflows to nurture leads",
+            href: "/workflows",
+          },
+          {
+            icon: BarChart3,
+            title: "View Analytics",
+            description: "Track performance and optimize your campaigns",
+            href: "/analytics",
+          },
+        ]}
+      />
     </div>
   );
 }

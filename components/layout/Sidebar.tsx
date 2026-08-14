@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Users,
   Mail,
-  Workflow,
   Target,
   BarChart3,
   Settings,
@@ -38,11 +37,6 @@ const navigationItems: NavItem[] = [
     label: "Campaigns",
     href: ROUTES.CAMPAIGNS,
     icon: <Mail className="h-5 w-5" />,
-  },
-  {
-    label: "Workflows",
-    href: ROUTES.WORKFLOWS,
-    icon: <Workflow className="h-5 w-5" />,
   },
   {
     label: "Opportunities",

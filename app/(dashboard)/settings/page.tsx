@@ -1,48 +1,15 @@
 "use client";
 
-import { Card, CardHeader, CardBody, Tabs, Input, Button, Select, Toast } from "@/components/ui";
+import { Card, CardHeader, CardBody, Tabs, Button, Toast } from "@/components/ui";
 import { ToastContainer } from "@/components/ui/Toast";
-import { User, Bell, Shield, Users, Zap, Save, Check } from "lucide-react";
+import { Bell, Shield, Users, Zap, Check } from "lucide-react";
 import { mockUsers } from "@/lib/mockData";
 import { useState, useCallback, useMemo } from "react";
-import { useLocalStorage } from "@/hooks";
 
 export default function SettingsPage() {
-  const currentUser = mockUsers[0];
-  const [savedProfile, setSavedProfile] = useLocalStorage("blum-blast-profile", {
-    name: `${currentUser.firstName} ${currentUser.lastName}`,
-    email: currentUser.email,
-    phone: "",
-    company: "",
-    timezone: "UTC-08:00 (Pacific Time)",
-  });
-
-  const [profileData, setProfileData] = useState({
-    firstName: savedProfile.name.split(" ")[0] || "",
-    lastName: savedProfile.name.split(" ")[1] || "",
-    email: savedProfile.email,
-    phone: savedProfile.phone || "",
-    company: savedProfile.company || "",
-    timezone: savedProfile.timezone || "UTC-08:00 (Pacific Time)",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "warning" | "info">("success");
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone: string): boolean => {
-    if (!phone) return true; // Phone is optional
-    const phoneRegex = /^[\d\s\-+()]+$/;
-    return phoneRegex.test(phone) && phone.replace(/\D/g, "").length >= 10;
-  };
 
   const showToastMessage = useCallback(
     (type: "success" | "error" | "warning" | "info", message: string) => {
@@ -54,239 +21,8 @@ export default function SettingsPage() {
     []
   );
 
-  const handleSaveProfile = useCallback(() => {
-    const trimmedFirstName = profileData.firstName.trim();
-    const trimmedLastName = profileData.lastName.trim();
-    const trimmedEmail = profileData.email.trim();
-    const trimmedPhone = profileData.phone.trim();
-    const trimmedCompany = profileData.company.trim();
-
-    if (!trimmedFirstName) {
-      showToastMessage("error", "First name is required");
-      return;
-    }
-
-    if (trimmedFirstName.length < 2) {
-      showToastMessage("error", "First name must be at least 2 characters");
-      return;
-    }
-
-    if (trimmedFirstName.length > 50) {
-      showToastMessage("error", "First name must not exceed 50 characters");
-      return;
-    }
-
-    if (!trimmedLastName) {
-      showToastMessage("error", "Last name is required");
-      return;
-    }
-
-    if (trimmedLastName.length < 2) {
-      showToastMessage("error", "Last name must be at least 2 characters");
-      return;
-    }
-
-    if (trimmedLastName.length > 50) {
-      showToastMessage("error", "Last name must not exceed 50 characters");
-      return;
-    }
-
-    if (!trimmedEmail) {
-      showToastMessage("error", "Email is required");
-      return;
-    }
-
-    if (!validateEmail(trimmedEmail)) {
-      showToastMessage("error", "Please enter a valid email address");
-      return;
-    }
-
-    if (trimmedPhone && !validatePhone(trimmedPhone)) {
-      showToastMessage("error", "Please enter a valid phone number (at least 10 digits)");
-      return;
-    }
-
-    if (trimmedCompany && trimmedCompany.length < 2) {
-      showToastMessage("error", "Company name must be at least 2 characters");
-      return;
-    }
-
-    if (trimmedCompany && trimmedCompany.length > 100) {
-      showToastMessage("error", "Company name must not exceed 100 characters");
-      return;
-    }
-
-    if (profileData.currentPassword || profileData.newPassword || profileData.confirmPassword) {
-      if (!profileData.currentPassword) {
-        showToastMessage("error", "Current password is required to change password");
-        return;
-      }
-
-      if (!profileData.newPassword) {
-        showToastMessage("error", "New password is required");
-        return;
-      }
-
-      if (profileData.newPassword.length < 8) {
-        showToastMessage("error", "New password must be at least 8 characters");
-        return;
-      }
-
-      if (profileData.newPassword !== profileData.confirmPassword) {
-        showToastMessage("error", "Passwords do not match");
-        return;
-      }
-    }
-
-    const updatedProfile = {
-      name: `${trimmedFirstName} ${trimmedLastName}`,
-      email: trimmedEmail,
-      phone: trimmedPhone,
-      company: trimmedCompany,
-      timezone: profileData.timezone,
-    };
-
-    setSavedProfile(updatedProfile);
-
-    setProfileData({
-      ...profileData,
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-
-    showToastMessage("success", "Profile updated successfully");
-  }, [profileData, setSavedProfile, showToastMessage]);
-
-  const handleCancel = useCallback(() => {
-    setProfileData({
-      firstName: savedProfile.name.split(" ")[0] || "",
-      lastName: savedProfile.name.split(" ")[1] || "",
-      email: savedProfile.email,
-      phone: savedProfile.phone || "",
-      company: savedProfile.company || "",
-      timezone: savedProfile.timezone || "UTC-08:00 (Pacific Time)",
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-
-    showToastMessage("info", "Changes discarded");
-  }, [savedProfile, showToastMessage]);
-
   const tabs = useMemo(
     () => [
-      {
-        id: "profile",
-        label: "Profile",
-        icon: <User className="h-4 w-4" />,
-        content: (
-          <Card className="animate-slideUp">
-            <CardHeader title="Profile Settings" subtitle="Manage your account details" />
-            <CardBody>
-              <div className="max-w-2xl space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="First Name"
-                    required
-                    value={profileData.firstName}
-                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                  />
-                  <Input
-                    label="Last Name"
-                    required
-                    value={profileData.lastName}
-                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                  />
-                </div>
-                <Input
-                  label="Email"
-                  type="email"
-                  required
-                  value={profileData.email}
-                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                />
-                <Input
-                  label="Phone"
-                  type="tel"
-                  placeholder="+1 (555) 123-4567"
-                  value={profileData.phone}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "" || /^[\d\s\-+()]+$/.test(value)) {
-                      setProfileData({ ...profileData, phone: value });
-                    }
-                  }}
-                />
-                <Input
-                  label="Company"
-                  placeholder="Acme Inc."
-                  value={profileData.company}
-                  onChange={(e) => setProfileData({ ...profileData, company: e.target.value })}
-                />
-                <Select
-                  label="Time Zone"
-                  value={profileData.timezone}
-                  onChange={(e) => setProfileData({ ...profileData, timezone: e.target.value })}
-                >
-                  <option>UTC-08:00 (Pacific Time)</option>
-                  <option>UTC-05:00 (Eastern Time)</option>
-                  <option>UTC+00:00 (GMT)</option>
-                  <option>UTC+01:00 (Central European)</option>
-                </Select>
-
-                <div className="border-t pt-4">
-                  <h3 className="mb-4 font-semibold text-gray-900">Change Password</h3>
-                  <div className="space-y-4">
-                    <Input
-                      label="Current Password"
-                      type="password"
-                      placeholder="Enter current password"
-                      value={profileData.currentPassword}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, currentPassword: e.target.value })
-                      }
-                    />
-                    <Input
-                      label="New Password"
-                      type="password"
-                      placeholder="Enter new password (min 8 characters)"
-                      value={profileData.newPassword}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, newPassword: e.target.value })
-                      }
-                    />
-                    <Input
-                      label="Confirm New Password"
-                      type="password"
-                      placeholder="Confirm new password"
-                      value={profileData.confirmPassword}
-                      onChange={(e) =>
-                        setProfileData({ ...profileData, confirmPassword: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="md"
-                    leftIcon={<Save className="h-4 w-4" />}
-                    onClick={handleSaveProfile}
-                  >
-                    Save Changes
-                  </Button>
-                  <Button type="button" variant="outline" size="md" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </CardBody>
-          </Card>
-        ),
-      },
       {
         id: "team",
         label: "Team",
@@ -386,6 +122,7 @@ export default function SettingsPage() {
                         type="checkbox"
                         className="peer sr-only"
                         defaultChecked={notification.checked}
+                        onChange={(e) => console.log(`${notification.title}: ${e.target.checked}`)}
                       />
                       <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300"></div>
                     </label>
@@ -537,7 +274,7 @@ export default function SettingsPage() {
         ),
       },
     ],
-    [profileData, handleSaveProfile, handleCancel]
+    [showToastMessage]
   );
 
   return (
@@ -547,7 +284,7 @@ export default function SettingsPage() {
         <p className="mt-1 text-sm text-gray-600">Manage your account settings and preferences</p>
       </div>
 
-      <Tabs tabs={tabs} defaultTab="profile" />
+      <Tabs tabs={tabs} defaultTab="team" />
 
       {/* Toast Notifications */}
       <ToastContainer>

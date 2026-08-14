@@ -12,10 +12,39 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    { className, type = "text", label, error, helperText, leftIcon, rightIcon, disabled, variant = "default", ...props },
+    { className, type = "text", label, error, helperText, leftIcon, rightIcon, disabled, variant = "default", value, defaultValue, onChange, ...props },
     ref
   ) => {
     const isGlass = variant === "glass";
+    
+    // Build input props conditionally to avoid controlled/uncontrolled conflicts
+    const inputProps: Record<string, unknown> = {
+      ref,
+      type,
+      disabled,
+      className: cn(
+        "w-full rounded-lg border px-4 py-2.5 transition-colors duration-200",
+        isGlass
+          ? "bg-white/10 text-white placeholder:text-white/50 border-white/20 hover:border-white/30 focus:border-white/40 focus:bg-white/15 backdrop-blur-sm"
+          : "bg-white text-gray-900 placeholder:text-gray-400 border-gray-300 hover:border-gray-400",
+        "focus:border-transparent focus:outline-none focus:ring-2",
+        isGlass ? "focus:ring-blue-400/50" : "focus:ring-blue-500",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        error && (isGlass ? "border-red-300 focus:ring-red-400/50" : "border-red-500 focus:ring-red-500"),
+        leftIcon && "pl-10",
+        rightIcon && "pr-10",
+        className
+      ),
+      ...props,
+    };
+
+    // Only add value/onChange if provided (controlled), otherwise use defaultValue (uncontrolled)
+    if (value !== undefined || onChange !== undefined) {
+      inputProps.value = value ?? '';
+      if (onChange) inputProps.onChange = onChange;
+    } else if (defaultValue !== undefined) {
+      inputProps.defaultValue = defaultValue;
+    }
     
     return (
       <div className="w-full">
@@ -37,25 +66,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             )}>{leftIcon}</div>
           )}
 
-          <input
-            ref={ref}
-            type={type}
-            disabled={disabled}
-            className={cn(
-              "w-full rounded-lg border px-4 py-2.5 transition-colors duration-200",
-              isGlass
-                ? "bg-white/10 text-white placeholder:text-white/50 border-white/20 hover:border-white/30 focus:border-white/40 focus:bg-white/15 backdrop-blur-sm"
-                : "bg-white text-gray-900 placeholder:text-gray-400 border-gray-300 hover:border-gray-400",
-              "focus:border-transparent focus:outline-none focus:ring-2",
-              isGlass ? "focus:ring-blue-400/50" : "focus:ring-blue-500",
-              "disabled:cursor-not-allowed disabled:opacity-50",
-              error && (isGlass ? "border-red-300 focus:ring-red-400/50" : "border-red-500 focus:ring-red-500"),
-              leftIcon && "pl-10",
-              rightIcon && "pr-10",
-              className
-            )}
-            {...props}
-          />
+          <input {...inputProps} />
 
           {rightIcon && (
             <div className={cn(

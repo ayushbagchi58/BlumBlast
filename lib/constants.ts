@@ -12,9 +12,6 @@ export const ROUTES = {
   CAMPAIGN_CREATE: "/campaigns/create",
   CAMPAIGN_EDIT: (id: string) => `/campaigns/${id}/edit`,
   CAMPAIGN_DETAIL: (id: string) => `/campaigns/${id}`,
-  WORKFLOWS: "/workflows",
-  WORKFLOW_CREATE: "/workflows/create",
-  WORKFLOW_EDIT: (id: string) => `/workflows/${id}/edit`,
   OPPORTUNITIES: "/opportunities",
   OPPORTUNITY_DETAIL: (id: string) => `/opportunities/${id}`,
   ANALYTICS: "/analytics",
@@ -61,13 +58,6 @@ export const OPPORTUNITY_STAGES = {
   NEGOTIATION: "negotiation",
   CLOSED_WON: "closed_won",
   CLOSED_LOST: "closed_lost",
-} as const;
-
-export const WORKFLOW_NODE_TYPES = {
-  TRIGGER: "trigger",
-  ACTION: "action",
-  CONDITION: "condition",
-  DELAY: "delay",
 } as const;
 
 export const PAGINATION = {

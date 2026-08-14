@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button, Card, Badge } from "@/components/ui";
 import { mockOpportunities, mockLeads } from "@/lib/mockData";
@@ -44,9 +44,54 @@ const STAGES: Record<
   },
 };
 
+// Map old stage names to new ones
+const stageMap: Record<string, OpportunityStage> = {
+  'qualification': 'new',
+  'new': 'new',
+  'contacted': 'contacted',
+  'proposal': 'proposal',
+  'negotiation': 'negotiation',
+  'closed_won': 'closed_won',
+  'closed_lost': 'closed_lost',
+};
+
 export default function OpportunitiesPage() {
-  const [opportunities] = useState<Opportunity[]>(mockOpportunities);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
+
+  const loadOpportunities = useCallback(() => {
+    try {
+      // Load from localStorage
+      const savedOpportunities = localStorage.getItem('blum-blast-opportunities');
+      let allOpportunities: any[] = [];
+
+      if (savedOpportunities) {
+        const parsed = JSON.parse(savedOpportunities);
+        // Map stage names and ensure proper format
+        allOpportunities = parsed.map((opp: any) => ({
+          ...opp,
+          stage: stageMap[opp.stage] || 'new',
+          notes: opp.notes || [],
+          assignedTo: opp.assignedTo || 'You',
+        }));
+      }
+
+      // Add mock opportunities if no saved ones
+      if (allOpportunities.length === 0) {
+        allOpportunities = mockOpportunities;
+      }
+
+      setOpportunities(allOpportunities);
+    } catch (e) {
+      console.error("Error loading opportunities:", e);
+      setOpportunities(mockOpportunities);
+    }
+  }, []);
+
+  // Load opportunities from localStorage
+  useEffect(() => {
+    loadOpportunities();
+  }, [loadOpportunities]);
 
   // Group opportunities by stage for kanban view
   const opportunitiesByStage = Object.keys(STAGES).reduce(
@@ -68,11 +113,37 @@ export default function OpportunitiesPage() {
     .reduce((sum, o) => sum + o.value, 0);
 
   const getLeadName = (leadId: string) => {
+    // Try to get from localStorage first
+    try {
+      const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
+      if (importedLeadsData) {
+        const importedLeads = JSON.parse(importedLeadsData);
+        const lead = importedLeads.find((l: any) => l.id === leadId);
+        if (lead) return `${lead.firstName} ${lead.lastName}`;
+      }
+    } catch (e) {
+      console.error("Error loading imported leads:", e);
+    }
+    
+    // Fallback to mock leads
     const lead = mockLeads.find((l) => l.id === leadId);
     return lead ? `${lead.firstName} ${lead.lastName}` : "Unknown Lead";
   };
 
   const getLeadCompany = (leadId: string) => {
+    // Try to get from localStorage first
+    try {
+      const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
+      if (importedLeadsData) {
+        const importedLeads = JSON.parse(importedLeadsData);
+        const lead = importedLeads.find((l: any) => l.id === leadId);
+        if (lead) return lead.company || "";
+      }
+    } catch (e) {
+      console.error("Error loading imported leads:", e);
+    }
+    
+    // Fallback to mock leads
     const lead = mockLeads.find((l) => l.id === leadId);
     return lead?.company || "";
   };

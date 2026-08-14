@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Card, Button, Badge, Input } from "@/components/ui";
+import { Card, Button, Badge, Input, NextStepsCard } from "@/components/ui";
 import { mockCampaigns } from "@/lib/mockData";
 import type { Campaign, CampaignStatus, CampaignChannel } from "@/lib/types";
 import {
@@ -19,12 +19,33 @@ import {
   Users,
   TrendingUp,
   DollarSign,
+  Upload,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
-import { toast as _toast } from "sonner"; // Ready for campaign actions
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function CampaignsPage() {
-  const [campaigns] = useState<Campaign[]>(mockCampaigns);
+  const router = useRouter();
+  // Load campaigns from localStorage, merge with mockCampaigns
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+  useEffect(() => {
+    // Load saved campaigns from localStorage
+    const savedCampaigns = localStorage.getItem("blum-blast-campaigns");
+    if (savedCampaigns) {
+      try {
+        const parsed = JSON.parse(savedCampaigns);
+        // Merge saved campaigns with mock campaigns (saved ones first)
+        setCampaigns([...parsed, ...mockCampaigns]);
+      } catch (e) {
+        console.error("Error loading campaigns:", e);
+        setCampaigns(mockCampaigns);
+      }
+    } else {
+      setCampaigns(mockCampaigns);
+    }
+  }, []);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<CampaignStatus | "all">("all");
   const [channelFilter] = useState<CampaignChannel | "all">("all");
@@ -82,15 +103,15 @@ export default function CampaignsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Campaigns</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Campaigns</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Create and manage your marketing campaigns
           </p>
         </div>
-        <Link href="/campaigns/new">
-          <Button>
+        <Link href="/campaigns/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             Create Campaign
           </Button>
@@ -228,6 +249,28 @@ export default function CampaignsPage() {
                   </div>
                 )}
 
+                {/* Scheduled Info */}
+                {campaign.status === "scheduled" && (campaign as any).scheduledFor && (
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <Calendar className="w-5 h-5 text-purple-600 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-purple-900">
+                          Scheduled to Send
+                        </p>
+                        <p className="text-sm text-purple-700 mt-1">
+                          {new Date((campaign as any).scheduledDate).toLocaleDateString('en-US', { 
+                            weekday: 'short',
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })} at {(campaign as any).scheduledTime} {(campaign as any).scheduledAmPm}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Date */}
                 <div className="flex items-center gap-1 text-sm text-gray-600">
                   <Calendar className="w-4 h-4" />
@@ -245,9 +288,9 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 border-t border-gray-200">
+                <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
                   {campaign.status === "sent" && (
-                    <Link href={`/campaigns/${campaign.id}/analytics`} className="flex-1">
+                    <Link href={`/campaigns/${campaign.id}/analytics`} className="w-full">
                       <Button variant="primary" className="w-full">
                         <BarChart3 className="w-4 h-4 mr-2" />
                         Analytics
@@ -255,21 +298,151 @@ export default function CampaignsPage() {
                     </Link>
                   )}
                   {campaign.status === "draft" && (
-                    <Link href={`/campaigns/${campaign.id}/edit`} className="flex-1">
-                      <Button variant="primary" className="w-full">
-                        <Play className="w-4 h-4 mr-2" />
-                        Continue
-                      </Button>
-                    </Link>
+                    <>
+                      <Link href={`/campaigns/${campaign.id}/import-leads`} className="w-full">
+                        <Button variant="primary" className="w-full">
+                          <Upload className="w-4 h-4 mr-2" />
+                          Import Leads
+                        </Button>
+                      </Link>
+                      <div className="flex gap-2">
+                        <Link href={`/campaigns/${campaign.id}/edit`} className="flex-1">
+                          <Button variant="outline" className="w-full">
+                            <Play className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            // Duplicate campaign
+                            const newCampaign = {
+                              ...campaign,
+                              id: "camp_" + Date.now(),
+                              name: campaign.name + " (Copy)",
+                              status: "draft" as const,
+                              recipientCount: 0,
+                              sentCount: 0,
+                              deliveredCount: 0,
+                              openedCount: 0,
+                              clickedCount: 0,
+                              unsubscribedCount: 0,
+                              bouncedCount: 0,
+                              sentAt: undefined,
+                              scheduledFor: undefined,
+                              createdAt: new Date(),
+                              updatedAt: new Date(),
+                            };
+                            
+                            // Save to localStorage
+                            const savedCampaigns = localStorage.getItem("blum-blast-campaigns");
+                            let campaigns = [];
+                            if (savedCampaigns) {
+                              try {
+                                campaigns = JSON.parse(savedCampaigns);
+                              } catch (e) {
+                                console.error("Error parsing campaigns:", e);
+                              }
+                            }
+                            campaigns.unshift(newCampaign);
+                            localStorage.setItem("blum-blast-campaigns", JSON.stringify(campaigns));
+                            
+                            // Show success toast and redirect to edit
+                            toast.success("Campaign copied successfully!");
+                            setTimeout(() => {
+                              router.push(`/campaigns/${newCampaign.id}/edit`);
+                            }, 500);
+                          }}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </>
                   )}
-                  <Button variant="outline">
-                    <Copy className="w-4 h-4" />
-                  </Button>
+                  {campaign.status !== "sent" && campaign.status !== "draft" && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        // Duplicate campaign
+                        const newCampaign = {
+                          ...campaign,
+                          id: "camp_" + Date.now(),
+                          name: campaign.name + " (Copy)",
+                          status: "draft" as const,
+                          recipientCount: 0,
+                          sentCount: 0,
+                          deliveredCount: 0,
+                          openedCount: 0,
+                          clickedCount: 0,
+                          unsubscribedCount: 0,
+                          bouncedCount: 0,
+                          sentAt: undefined,
+                          scheduledFor: undefined,
+                          createdAt: new Date(),
+                          updatedAt: new Date(),
+                        };
+                        
+                        // Save to localStorage
+                        const savedCampaigns = localStorage.getItem("blum-blast-campaigns");
+                        let campaigns = [];
+                        if (savedCampaigns) {
+                          try {
+                            campaigns = JSON.parse(savedCampaigns);
+                          } catch (e) {
+                            console.error("Error parsing campaigns:", e);
+                          }
+                        }
+                        campaigns.unshift(newCampaign);
+                        localStorage.setItem("blum-blast-campaigns", JSON.stringify(campaigns));
+                        
+                        // Show success toast and redirect to edit
+                        toast.success("Campaign copied successfully!");
+                        setTimeout(() => {
+                          router.push(`/campaigns/${newCampaign.id}/edit`);
+                        }, 500);
+                      }}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Next Steps Guide */}
+      {filteredCampaigns.length === 0 && searchTerm === "" && statusFilter === "all" && (
+        <NextStepsCard
+          title="📍 Getting Started with Campaigns"
+          steps={[
+            {
+              icon: Plus,
+              title: "Step 1: Create Campaign",
+              description: "Set up your campaign name and message content",
+              href: "/campaigns/new",
+            },
+            {
+              icon: Upload,
+              title: "Step 2: Import Leads",
+              description: "Add recipients who will receive your campaign",
+              href: "/leads/import",
+            },
+            {
+              icon: Send,
+              title: "Step 3: Launch Campaign",
+              description: "Review and send your campaign to leads",
+              href: "/campaigns",
+            },
+            {
+              icon: BarChart3,
+              title: "Step 4: Track Results",
+              description: "Monitor opens, clicks, and conversions",
+              href: "/analytics",
+            },
+          ]}
+        />
       )}
     </div>
   );

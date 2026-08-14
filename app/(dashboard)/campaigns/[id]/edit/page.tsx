@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Card, Button, Input, Select, Textarea, SuccessModal } from "@/components/ui";
-import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Save } from "lucide-react";
 import Link from "next/link";
-import type { CampaignChannel } from "@/lib/types";
+import type { CampaignChannel, Campaign } from "@/lib/types";
 
 type WizardStep = "basics" | "content" | "review";
 
-export default function NewCampaignPage() {
+export default function EditCampaignPage() {
+  const params = useParams();
+  const router = useRouter();
+  const campaignId = params.id as string;
+
   const [currentStep, setCurrentStep] = useState<WizardStep>("basics");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [campaignId, setCampaignId] = useState("");
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -21,6 +27,67 @@ export default function NewCampaignPage() {
     emailContent: "",
     smsContent: "",
   });
+
+  // Load campaign data
+  useEffect(() => {
+    const loadCampaign = () => {
+      try {
+        // Load from localStorage
+        const savedCampaigns = localStorage.getItem("blum-blast-campaigns");
+        if (savedCampaigns) {
+          const campaigns: Campaign[] = JSON.parse(savedCampaigns);
+          const found = campaigns.find((c) => c.id === campaignId);
+          
+          if (found) {
+            setCampaign(found);
+            
+            // Parse content based on channel
+            let emailContent = "";
+            let smsContent = "";
+            
+            if (found.channel === "email") {
+              emailContent = found.content || "";
+            } else if (found.channel === "sms") {
+              smsContent = found.content || "";
+            } else if (found.channel === "both") {
+              // Try to parse JSON content
+              try {
+                if (found.content) {
+                  const parsed = JSON.parse(found.content);
+                  emailContent = parsed.email || "";
+                  smsContent = parsed.sms || "";
+                }
+              } catch {
+                // If parsing fails, treat as plain text for email
+                // This handles old campaigns that weren't saved as JSON
+                emailContent = found.content || "";
+                smsContent = "";
+              }
+            }
+            
+            setFormData({
+              name: found.name,
+              channel: found.channel,
+              subject: found.subject || "",
+              emailContent,
+              smsContent,
+            });
+          } else {
+            alert("Campaign not found!");
+            router.push("/campaigns");
+          }
+        }
+      } catch (error) {
+        console.error("Error loading campaign:", error);
+        alert("Error loading campaign");
+        router.push("/campaigns");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCampaign();
+  }, [campaignId, router]);
 
   const steps = [
     { key: "basics" as WizardStep, label: "Campaign Details", number: 1 },
@@ -49,8 +116,6 @@ export default function NewCampaignPage() {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      const newCampaignId = "camp_" + Date.now();
-      
       // Prepare content based on channel
       let content = "";
       if (formData.channel === "email") {
@@ -58,61 +123,63 @@ export default function NewCampaignPage() {
       } else if (formData.channel === "sms") {
         content = formData.smsContent;
       } else if (formData.channel === "both") {
-        // For "both", store both contents
         content = JSON.stringify({
           email: formData.emailContent,
           sms: formData.smsContent,
         });
       }
       
-      // Create new campaign object
-      const newCampaign = {
-        id: newCampaignId,
+      // Update campaign object
+      const updatedCampaign = {
+        ...campaign,
         name: formData.name,
         channel: formData.channel,
-        status: "draft" as const,
         subject: formData.subject,
         content: content,
-        recipientCount: 0,
-        sentCount: 0,
-        deliveredCount: 0,
-        openedCount: 0,
-        clickedCount: 0,
-        unsubscribedCount: 0,
-        bouncedCount: 0,
-        createdBy: "user-1",
-        createdAt: new Date(),
         updatedAt: new Date(),
       };
       
       // Load existing campaigns from localStorage
       const savedCampaigns = localStorage.getItem("blum-blast-campaigns");
-      let campaigns = [];
+      let campaigns: Campaign[] = [];
       
       if (savedCampaigns) {
-        try {
-          campaigns = JSON.parse(savedCampaigns);
-        } catch (e) {
-          console.error("Error parsing saved campaigns:", e);
-        }
+        campaigns = JSON.parse(savedCampaigns);
       }
       
-      // Add new campaign to the beginning
-      campaigns.unshift(newCampaign);
+      // Find and update the campaign
+      const index = campaigns.findIndex((c) => c.id === campaignId);
+      if (index !== -1) {
+        campaigns[index] = updatedCampaign as Campaign;
+      }
       
       // Save back to localStorage
       localStorage.setItem("blum-blast-campaigns", JSON.stringify(campaigns));
       
-      setCampaignId(newCampaignId);
-      console.log("Campaign created:", newCampaign);
+      console.log("Campaign updated:", updatedCampaign);
       setShowSuccessModal(true);
     } catch (error) {
-      console.error("Error creating campaign:", error);
-      alert("Failed to create campaign. Please try again.");
+      console.error("Error updating campaign:", error);
+      alert("Failed to update campaign. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading campaign...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">
@@ -125,8 +192,8 @@ export default function NewCampaignPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Create Campaign</h1>
-          <p className="mt-1 text-gray-600">Step 1: Set up your campaign before importing leads</p>
+          <h1 className="text-3xl font-bold text-gray-900">Edit Campaign</h1>
+          <p className="mt-1 text-gray-600">Make changes to your campaign</p>
         </div>
       </div>
 
@@ -177,7 +244,7 @@ export default function NewCampaignPage() {
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Campaign Details</h2>
               <p className="mt-1 text-sm text-gray-600">
-                Name your campaign and choose how you want to reach your leads
+                Update your campaign name and delivery channel
               </p>
             </div>
 
@@ -215,13 +282,6 @@ export default function NewCampaignPage() {
                 {formData.channel === "both" && "Send both email and SMS to recipients"}
               </p>
             </div>
-
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <h3 className="font-medium text-blue-900 mb-2">📝 Next Step</h3>
-              <p className="text-sm text-blue-700">
-                After creating your campaign, you'll import leads who will receive this message
-              </p>
-            </div>
           </div>
         )}
 
@@ -229,11 +289,11 @@ export default function NewCampaignPage() {
         {currentStep === "content" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Create Content</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Update Content</h2>
               <p className="mt-1 text-sm text-gray-600">
-                {formData.channel === "email" && "Design your email message"}
-                {formData.channel === "sms" && "Write your SMS message (160 characters max)"}
-                {formData.channel === "both" && "Create both email and SMS content"}
+                {formData.channel === "email" && "Update your email message"}
+                {formData.channel === "sms" && "Update your SMS message (160 characters max)"}
+                {formData.channel === "both" && "Update both email and SMS content"}
               </p>
             </div>
 
@@ -291,9 +351,9 @@ export default function NewCampaignPage() {
         {currentStep === "review" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Review Campaign</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Review Changes</h2>
               <p className="mt-1 text-sm text-gray-600">
-                Review your campaign details before creating
+                Review your updated campaign details before saving
               </p>
             </div>
 
@@ -336,12 +396,12 @@ export default function NewCampaignPage() {
                 </div>
               )}
 
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                <h3 className="font-medium text-blue-900 mb-2">✅ What Happens Next</h3>
-                <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-                  <li>Campaign will be created and saved as draft</li>
-                  <li>You'll import leads to receive this campaign</li>
-                  <li>Review and launch the campaign to start sending</li>
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                <h3 className="font-medium text-green-900 mb-2">✅ What Happens Next</h3>
+                <ul className="text-sm text-green-700 space-y-1">
+                  <li><strong>Step 1:</strong> Save these changes</li>
+                  <li><strong>Step 2:</strong> Import leads (who will receive this)</li>
+                  <li><strong>Step 3:</strong> Launch campaign to send</li>
                 </ul>
               </div>
             </div>
@@ -387,8 +447,8 @@ export default function NewCampaignPage() {
                 onClick={handleSubmit}
                 isLoading={isSubmitting}
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Create Campaign
+                <Save className="h-4 w-4 mr-2" />
+                Save Changes
               </Button>
             )}
           </div>
@@ -398,16 +458,19 @@ export default function NewCampaignPage() {
       {/* Success Modal */}
       <SuccessModal
         isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        title="Campaign Created Successfully!"
-        message="Your campaign has been created. Now let's import leads who will receive this campaign."
+        onClose={() => {
+          setShowSuccessModal(false);
+          router.push("/campaigns");
+        }}
+        title="Campaign Updated Successfully!"
+        message="Your campaign is ready. Next step: Import leads who will receive this campaign."
         nextAction={{
           label: "Import Leads Now",
           href: `/campaigns/${campaignId}/import-leads`,
         }}
         secondaryAction={{
-          label: "View Campaign",
-          href: `/campaigns`,
+          label: "Back to Campaigns",
+          href: "/campaigns",
         }}
       />
     </div>

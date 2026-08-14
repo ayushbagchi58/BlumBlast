@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Card, Button, Badge, Input, Select, EmptyState } from "@/components/ui";
+import { useState, useMemo, useEffect } from "react";
+import { Card, Button, Input, EmptyState } from "@/components/ui";
 import { mockLeads } from "@/lib/mockData";
-import type { Lead, LeadStatus, LeadSource } from "@/lib/types";
+import type { Lead } from "@/lib/types";
 import {
   Users,
-  Plus,
   Search,
   Filter,
   Download,
@@ -24,15 +23,80 @@ import { useDebounce } from "@/hooks";
 import { toast } from "sonner";
 
 export default function LeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
-  const [sourceFilter, setSourceFilter] = useState<LeadSource | "all">("all");
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [sortField, setSortField] = useState<keyof Lead>("createdAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [leadCampaigns, setLeadCampaigns] = useState<Record<string, string[]>>({});
 
   const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Get campaign names for a lead
+  const getCampaignsForLead = (leadId: string): string[] => {
+    return leadCampaigns[leadId] || [];
+  };
+
+  // Load leads from both mock data and imported leads
+  useEffect(() => {
+    const loadLeads = () => {
+      // Start with mock leads
+      const allLeads = [...mockLeads];
+      
+      // Load imported leads from the shared storage
+      try {
+        const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
+        if (importedLeadsData) {
+          const importedLeads = JSON.parse(importedLeadsData);
+          
+          // Add imported leads if not already in the list
+          importedLeads.forEach((imported: Lead) => {
+            if (!allLeads.find(l => l.id === imported.id)) {
+              allLeads.push(imported);
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Error loading imported leads:", e);
+      }
+      
+      setLeads(allLeads);
+
+      // Load campaign associations
+      try {
+        const campaignLeadsData = localStorage.getItem("blum-blast-campaign-leads");
+        const campaignsData = localStorage.getItem("blum-blast-campaigns");
+        
+        if (campaignLeadsData && campaignsData) {
+          const allCampaignLeads = JSON.parse(campaignLeadsData);
+          const allCampaigns = JSON.parse(campaignsData);
+          
+          // Build a map of leadId -> campaign names
+          const leadToCampaigns: Record<string, string[]> = {};
+          
+          allCampaignLeads.forEach((cl: any) => {
+            const campaign = allCampaigns.find((c: any) => c.id === cl.campaignId);
+            const campaignName = campaign ? campaign.name : cl.campaignId;
+            
+            cl.leadIds.forEach((leadId: string) => {
+              if (!leadToCampaigns[leadId]) {
+                leadToCampaigns[leadId] = [];
+              }
+              if (!leadToCampaigns[leadId].includes(campaignName)) {
+                leadToCampaigns[leadId].push(campaignName);
+              }
+            });
+          });
+          
+          setLeadCampaigns(leadToCampaigns);
+        }
+      } catch (e) {
+        console.error("Error loading campaign associations:", e);
+      }
+    };
+    
+    loadLeads();
+  }, []);
 
   // Filter and sort leads
   const filteredLeads = useMemo(() => {
@@ -50,16 +114,6 @@ export default function LeadsPage() {
       );
     }
 
-    // Status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((lead) => lead.status === statusFilter);
-    }
-
-    // Source filter
-    if (sourceFilter !== "all") {
-      filtered = filtered.filter((lead) => lead.source === sourceFilter);
-    }
-
     // Sort
     filtered.sort((a, b) => {
       const aValue = a[sortField];
@@ -74,7 +128,7 @@ export default function LeadsPage() {
     });
 
     return filtered;
-  }, [leads, debouncedSearch, statusFilter, sourceFilter, sortField, sortDirection]);
+  }, [leads, debouncedSearch, sortField, sortDirection]);
 
   // Select/Deselect leads
   const toggleSelectLead = (leadId: string) => {
@@ -131,52 +185,27 @@ export default function LeadsPage() {
     }
   };
 
-  // Get badge variant based on score
-  const getScoreBadgeVariant = (score: number) => {
-    if (score >= 80) return "success";
-    if (score >= 50) return "warning";
-    return "default";
-  };
-
-  // Get status badge variant
-  const getStatusBadgeVariant = (status: LeadStatus) => {
-    switch (status) {
-      case "new":
-        return "info";
-      case "contacted":
-        return "warning";
-      case "engaged":
-        return "purple";
-      case "qualified":
-        return "success";
-      case "converted":
-        return "success";
-      case "unqualified":
-        return "default";
-      default:
-        return "default";
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
-          <p className="mt-1 text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Leads</h1>
+          <p className="mt-1 text-sm sm:text-base text-gray-600">
             {filteredLeads.length} leads {selectedLeads.size > 0 && `• ${selectedLeads.size} selected`}
           </p>
         </div>
-        <div className="flex gap-3">
-          <Link href="/leads/import">
-            <Button variant="outline" leftIcon={<Upload className="h-4 w-4" />}>
-              Import
-            </Button>
-          </Link>
-          <Link href="/leads/new">
-            <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
-              Add Lead
+        <div className="flex gap-2 w-full sm:w-auto">
+          {leads.length > 5 && (
+            <Link href="/leads/clear-imported" className="flex-1 sm:flex-none">
+              <Button variant="outline" leftIcon={<Trash2 className="h-4 w-4" />} className="w-full sm:w-auto">
+                Clear Imported
+              </Button>
+            </Link>
+          )}
+          <Link href="/leads/import" className="flex-1 sm:flex-none">
+            <Button variant="primary" leftIcon={<Upload className="h-4 w-4" />} className="w-full sm:w-auto">
+              Import CSV
             </Button>
           </Link>
         </div>
@@ -195,46 +224,11 @@ export default function LeadsPage() {
             />
           </div>
 
-          {/* Status Filter */}
-          <div className="flex-1">
-            <Select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as LeadStatus | "all")}
-            >
-              <option value="all">All Status</option>
-              <option value="new">New</option>
-              <option value="contacted">Contacted</option>
-              <option value="engaged">Engaged</option>
-              <option value="qualified">Qualified</option>
-              <option value="unqualified">Unqualified</option>
-              <option value="converted">Converted</option>
-            </Select>
-          </div>
-
-          {/* Source Filter */}
-          <div className="flex-1">
-            <Select
-              value={sourceFilter}
-              onChange={(e) => setSourceFilter(e.target.value as LeadSource | "all")}
-            >
-              <option value="all">All Sources</option>
-              <option value="email_inbound">Email</option>
-              <option value="sms_inbound">SMS</option>
-              <option value="csv_import">CSV Import</option>
-              <option value="manual">Manual</option>
-              <option value="form">Form</option>
-              <option value="api">API</option>
-              <option value="referral">Referral</option>
-            </Select>
-          </div>
-
           {/* Clear Button */}
           <Button
             variant="outline"
             leftIcon={<Filter className="h-4 w-4" />}
             onClick={() => {
-              setStatusFilter("all");
-              setSourceFilter("all");
               setSearchQuery("");
             }}
           >
@@ -303,17 +297,7 @@ export default function LeadsPage() {
                     </div>
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Company</th>
-                  <th
-                    className="cursor-pointer px-4 py-3 text-left text-sm font-semibold text-gray-900"
-                    onClick={() => handleSort("score")}
-                  >
-                    <div className="flex items-center gap-1">
-                      Score
-                      <ArrowUpDown className="h-3 w-3" />
-                    </div>
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Source</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Campaigns</th>
                   <th
                     className="cursor-pointer px-4 py-3 text-left text-sm font-semibold text-gray-900"
                     onClick={() => handleSort("createdAt")}
@@ -347,17 +331,41 @@ export default function LeadsPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-900">{lead.company || "—"}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={getScoreBadgeVariant(lead.score)} size="sm">
-                        {lead.score}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={getStatusBadgeVariant(lead.status)} size="sm">
-                        {lead.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {lead.source.replace(/_/g, " ")}
+                      {getCampaignsForLead(lead.id).length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {getCampaignsForLead(lead.id).map((campaignName, index) => {
+                            // Find campaign ID from name
+                            const findCampaignId = () => {
+                              try {
+                                const campaignsData = localStorage.getItem("blum-blast-campaigns");
+                                if (campaignsData) {
+                                  const campaigns = JSON.parse(campaignsData);
+                                  const campaign = campaigns.find((c: any) => c.name === campaignName);
+                                  return campaign?.id;
+                                }
+                              } catch {
+                                return null;
+                              }
+                              return null;
+                            };
+                            
+                            const campaignId = findCampaignId();
+                            
+                            return (
+                              <Link
+                                key={index}
+                                href={campaignId ? `/campaigns/${campaignId}/launch` : '#'}
+                                className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 hover:bg-blue-200 transition-colors"
+                                title={`Click to launch ${campaignName}`}
+                              >
+                                {campaignName}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">Not in any campaign</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {new Date(lead.createdAt).toLocaleDateString()}
@@ -387,9 +395,9 @@ export default function LeadsPage() {
             icon={<Users className="h-12 w-12" />}
             title="No leads found"
             description={
-              searchQuery || statusFilter !== "all" || sourceFilter !== "all"
-                ? "Try adjusting your filters"
-                : "Get started by importing leads or adding them manually"
+              searchQuery
+                ? "Try adjusting your search"
+                : "Get started by importing leads from CSV"
             }
             action={
               <Link href="/leads/import">

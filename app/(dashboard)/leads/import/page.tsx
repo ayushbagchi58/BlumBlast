@@ -32,7 +32,6 @@ export default function ImportLeadsPage() {
     { value: "phone", label: "Phone" },
     { value: "company", label: "Company" },
     { value: "title", label: "Job Title" },
-    { value: "source", label: "Source" },
     { value: "tags", label: "Tags" },
   ];
 
@@ -94,22 +93,40 @@ export default function ImportLeadsPage() {
     setCurrentStep("importing");
     setImportProgress(0);
 
-    // Simulate import process
+    // Import process - generate timestamp here inside async function body
+    const timestamp = new Date().getTime();
     const totalRows = csvData?.rows.length || 0;
     let imported = 0;
-    let duplicates = 0;
+    const duplicates = 0;
     let errors = 0;
+    const importedLeads: any[] = [];
 
     for (let i = 0; i < totalRows; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 30));
 
-      // Simulate random outcomes
-      const random = Math.random();
-      if (random > 0.9) {
-        duplicates++;
-      } else if (random > 0.85) {
+      // Create lead from mapped data
+      const row = csvData?.rows[i] || [];
+      const mappedData = getMappedPreview(row);
+      
+      // Validate: must have email
+      if (!mappedData.email || mappedData.email.trim() === '') {
         errors++;
       } else {
+        const lead = {
+          id: `imported-${timestamp}-${i}`,
+          firstName: mappedData.firstName || "Unknown",
+          lastName: mappedData.lastName || "Lead",
+          email: mappedData.email.trim(),
+          phone: mappedData.phone || "",
+          company: mappedData.company || "",
+          title: mappedData.title || "",
+          tags: mappedData.tags ? mappedData.tags.split(',').map(t => t.trim()) : ["imported"],
+          customFields: {},
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        
+        importedLeads.push(lead);
         imported++;
       }
 
@@ -117,6 +134,19 @@ export default function ImportLeadsPage() {
       setImportedCount(imported);
       setDuplicateCount(duplicates);
       setErrorCount(errors);
+    }
+
+    // Save imported leads to localStorage
+    try {
+      const existingLeads = localStorage.getItem("blum-blast-imported-leads");
+      const allImportedLeads = existingLeads ? JSON.parse(existingLeads) : [];
+      
+      // Add new leads
+      allImportedLeads.push(...importedLeads);
+      
+      localStorage.setItem("blum-blast-imported-leads", JSON.stringify(allImportedLeads));
+    } catch (e) {
+      console.error("Error saving imported leads:", e);
     }
 
     setCurrentStep("complete");

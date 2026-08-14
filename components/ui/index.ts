@@ -44,3 +44,6 @@ export { default as Dropdown } from "./Dropdown";
 export type { DropdownProps, DropdownItem } from "./Dropdown";
 
 export { default as Accordion } from "./Accordion";
+
+export { SuccessModal } from "./SuccessModal";
+export { NextStepsCard } from "./NextStepsCard";
