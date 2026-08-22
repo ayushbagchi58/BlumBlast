@@ -92,8 +92,8 @@ export default function NewOpportunityPage() {
           <div>
             <h3 className="font-semibold text-green-900">Ready to Convert</h3>
             <p className="text-sm text-green-700 mt-1">
-              This lead has been qualified and is ready for active sales engagement.
-              Converting to an opportunity allows you to track deal progress and revenue.
+              This lead has been qualified and is ready for loan processing.
+              Converting to an opportunity allows you to track application progress and approval status.
             </p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function NewOpportunityPage() {
 
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">
-                Deal Value <span className="text-red-500">*</span>
+                Loan Amount Requested <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -135,7 +135,7 @@ export default function NewOpportunityPage() {
                 />
               </div>
               <p className="mt-1 text-sm text-gray-500">
-                Estimated revenue for this opportunity
+                How much funding is the customer requesting?
               </p>
             </div>
 
@@ -235,8 +235,8 @@ export default function NewOpportunityPage() {
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        title="Lead Converted Successfully!"
-        message="The lead has been converted into an opportunity. You can now track the deal progress and work towards closing."
+        title="Loan Application Created!"
+        message="The lead has been converted into a loan application. You can now track the application progress and work towards approval."
         nextAction={{
           label: "View Opportunity",
           href: `/opportunities/${opportunityId}`,

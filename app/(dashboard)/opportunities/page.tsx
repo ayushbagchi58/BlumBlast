@@ -187,11 +187,11 @@ export default function OpportunitiesPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Pipeline</p>
+              <p className="text-sm text-gray-600 mb-1">Total Pipeline Value</p>
               <p className="text-2xl font-bold text-gray-900">
                 ${totalValue.toLocaleString()}
               </p>
-              <p className="text-sm text-gray-600 mt-1">{totalCount} deals</p>
+              <p className="text-sm text-gray-600 mt-1">{totalCount} loan applications</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
               <DollarSign className="w-6 h-6 text-blue-600" />
@@ -202,11 +202,11 @@ export default function OpportunitiesPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Won This Month</p>
+              <p className="text-sm text-gray-600 mb-1">Approved This Month</p>
               <p className="text-2xl font-bold text-green-600">
                 ${wonValue.toLocaleString()}
               </p>
-              <p className="text-sm text-gray-600 mt-1">{wonCount} deals</p>
+              <p className="text-sm text-gray-600 mt-1">{wonCount} loans</p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
               <TrendingUp className="w-6 h-6 text-green-600" />
@@ -217,7 +217,7 @@ export default function OpportunitiesPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Win Rate</p>
+              <p className="text-sm text-gray-600 mb-1">Approval Rate</p>
               <p className="text-2xl font-bold text-gray-900">
                 {totalCount > 0 ? Math.round((wonCount / totalCount) * 100) : 0}%
               </p>
@@ -232,14 +232,14 @@ export default function OpportunitiesPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Avg. Deal Size</p>
+              <p className="text-sm text-gray-600 mb-1">Avg. Loan Amount</p>
               <p className="text-2xl font-bold text-gray-900">
                 $
                 {totalCount > 0
                   ? Math.round(totalValue / totalCount).toLocaleString()
                   : 0}
               </p>
-              <p className="text-sm text-gray-600 mt-1">Per opportunity</p>
+              <p className="text-sm text-gray-600 mt-1">Per application</p>
             </div>
             <div className="p-3 bg-orange-100 rounded-lg">
               <DollarSign className="w-6 h-6 text-orange-600" />
@@ -272,7 +272,7 @@ export default function OpportunitiesPage() {
                         <Badge variant="default">{stageOpps.length}</Badge>
                       </div>
                       <p className="text-xs text-gray-600">
-                        ${stageValue.toLocaleString()}
+                        Total loan amount: ${stageValue.toLocaleString()}
                       </p>
                     </div>
 

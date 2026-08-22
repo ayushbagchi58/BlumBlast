@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card, CardHeader, CardBody, Select, Button, Badge } from "@/components/ui";
 import { mockLeadSourceData } from "@/lib/mockData";
+import Link from "next/link";
 import {
   TrendingUp,
   Users,
@@ -216,25 +217,37 @@ export default function AnalyticsPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
           <p className="mt-1 text-sm text-gray-600">
-            Comprehensive insights and performance metrics
+            Channel performance and lead conversion insights
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            leftIcon={<Calendar className="h-4 w-4" />}
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="365">Last year</option>
-          </Select>
+          <Link href="/analytics/conversions" className="w-48">
+            <Button 
+              variant="primary" 
+              size="md"
+              leftIcon={<Target className="h-4 w-4" />}
+              className="w-full whitespace-nowrap"
+            >
+              Conversion Analytics
+            </Button>
+          </Link>
+          <div className="w-48">
+            <Select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              leftIcon={<Calendar className="h-4 w-4" />}
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+              <option value="365">Last year</option>
+            </Select>
+          </div>
           <Button
             variant="outline"
             size="md"
             leftIcon={<Download className="h-4 w-4" />}
-            className="whitespace-nowrap"
+            className="w-48 whitespace-nowrap"
             onClick={handleExportReport}
           >
             Export Report

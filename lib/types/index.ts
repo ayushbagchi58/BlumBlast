@@ -12,34 +12,75 @@ export type LeadStatus =
   | 'converted';    // Became BusinessBlum customer
 
 /**
- * Lead Source
+ * Lead Source - Inbound channels for Business Blum lead capture
  */
 export type LeadSource =
-  | 'email_inbound'    // Came via email integration
-  | 'sms_inbound'      // Came via SMS integration
-  | 'manual'           // Manually entered
-  | 'csv_import'       // Bulk CSV import
-  | 'api'              // API integration
-  | 'form'             // Web form submission
-  | 'referral';        // Referred by existing customer
+  | 'email'           // Email inquiry
+  | 'sms'             // SMS message
+  | 'facebook'        // Facebook Messenger
+  | 'instagram'       // Instagram DM
+  | 'twitter'         // Twitter/X DM
+  | 'linkedin'        // LinkedIn message
+  | 'whatsapp'        // WhatsApp message
+  | 'webchat';        // Website live chat
 
 /**
- * Lead - Core entity for contact management
+ * Lead Intent - What the lead is interested in
+ */
+export type LeadIntent =
+  | 'business_loan'
+  | 'startup_funding'
+  | 'equipment_financing'
+  | 'construction_loan'
+  | 'sba_loan'
+  | 'working_capital'
+  | 'debt_consolidation'
+  | 'general_inquiry';
+
+/**
+ * Lead - Inbound inquiry from multiple channels
  */
 export interface Lead {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
+  phone: string;
   company?: string;
-  title?: string;
-  source: LeadSource;
+  
+  // Channel information
+  source: LeadSource;           // Which channel they came from
+  sourceDetails?: string;        // Original message/content
+  
+  // Intent data
+  intent?: LeadIntent;           // What they're looking for (optional for backward compatibility)
+  fundingAmount?: string;        // Requested funding amount
+  businessType?: string;         // Type of business
+  message?: string;              // Original inquiry message (optional for backward compatibility)
+  
+  // CRM data
   status: LeadStatus;
-  score: number;              // 0-100 lead quality score
   tags: string[];
   customFields: Record<string, any>;
-  assignedTo?: string;        // User ID of assigned team member
+  assignedTo?: string;           // User ID of assigned team member
+  
+  // Lead Scoring & Nurturing
+  score?: number;                // 0-100 lead score
+  engagementScore?: number;      // Engagement-based score (0-60)
+  fitScore?: number;             // Fit-based score (0-40)
+  temperature?: 'hot' | 'warm' | 'cool' | 'cold';  // Lead temperature
+  nurtureSequenceId?: string;    // Active nurture sequence
+  nurtureStepIndex?: number;     // Current step in sequence
+  lastEngagementAt?: Date;       // Last interaction
+  
+  // Conversion tracking
+  businessBlumSignupUrl?: string;  // Personalized signup URL
+  clickedSignupLink?: boolean;     // Clicked BusinessBlum link
+  signedUp?: boolean;              // Completed signup
+  convertedAt?: Date;              // Conversion date
+  conversionValue?: number;        // Deal value
+  
+  // Timestamps
   createdAt: Date;
   updatedAt: Date;
   lastActivityAt?: Date;
@@ -301,6 +342,74 @@ export interface Template {
   createdBy?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+/**
+ * Nurture Sequence Step
+ */
+export interface NurtureStep {
+  id: string;
+  order: number;
+  type: 'email' | 'sms';
+  delayHours: number;         // Hours after previous step or enrollment
+  subject?: string;           // For email
+  content: string;            // Message content with personalization tokens
+  isActive: boolean;
+}
+
+/**
+ * Nurture Sequence - Automated follow-up sequence
+ */
+export interface NurtureSequence {
+  id: string;
+  name: string;
+  description?: string;
+  triggerIntent?: LeadIntent;   // Auto-enroll leads with this intent
+  triggerSource?: LeadSource;   // Auto-enroll leads from this source
+  steps: NurtureStep[];
+  isActive: boolean;
+  enrolledCount: number;
+  completedCount: number;
+  conversionRate: number;       // Percentage of enrollees who converted
+  createdBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Lead Engagement Event - Track interactions
+ */
+export interface LeadEngagement {
+  id: string;
+  leadId: string;
+  type: 'email_sent' | 'email_opened' | 'email_clicked' | 'sms_sent' | 'sms_replied' | 'link_clicked' | 'form_submitted';
+  metadata?: Record<string, any>;
+  scoreImpact: number;         // Points added to lead score
+  createdAt: Date;
+}
+
+/**
+ * Conversion Analytics
+ */
+export interface ConversionMetrics {
+  totalLeads: number;
+  convertedLeads: number;
+  conversionRate: number;
+  avgTimeToConversion: number;  // Hours
+  totalRevenue: number;
+  avgDealValue: number;
+  bySource: Record<LeadSource, {
+    leads: number;
+    conversions: number;
+    rate: number;
+    revenue: number;
+  }>;
+  byIntent: Record<LeadIntent, {
+    leads: number;
+    conversions: number;
+    rate: number;
+    revenue: number;
+  }>;
 }
 
 /**

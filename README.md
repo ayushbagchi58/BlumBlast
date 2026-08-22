@@ -1,28 +1,27 @@
-# BlumBlast - Customer Acquisition Engine
+# BlumBlast - Inbound Lead Capture System
 
-## 🎉 **VERSION 2.0 RELEASED!** ✨
+## 🎉 **VERSION 3.0 - INBOUND LEAD CAPTURE!** ✨
 
-**All features successfully implemented with enhanced UX!**  
-**New guided workflow with step-by-step navigation**  
-**Live chat support integrated**  
-**Industry-standard campaign flow implemented**
+**Complete transformation to multi-channel lead capture system!**  
+**Capture inquiries from Email, SMS, and Social Media**  
+**Automatic source tagging and intent tracking**  
+**Built specifically for BusinessBlum's capital matching platform**
 
-📋 [Quick Start Guide](SIMPLE_SUMMARY.md) | 📚 [Full Documentation](DOCUMENTATION_INDEX.md) | 🎯 [What Changed](README_CHANGES.md)
+📋 [What Changed?](INBOUND_LEAD_CAPTURE_CHANGES.md) | 📚 [Full Documentation](DOCUMENTATION_INDEX.md)
 
 ---
 
-## 🆕 What's New in v2.0
+## 🆕 What's New in v3.0 - Inbound Lead Capture
 
-### Major Improvements
-- ✅ **Step-by-Step Guided Flow** - System guides you through every action
-- ✅ **Success Messages with Next Actions** - Clear direction after each step  
-- ✅ **Live Chat Support** - Instant help from any page
-- ✅ **Simplified Campaign Creation** - 3 steps instead of 5
-- ✅ **CSV-Only Lead Import** - Faster bulk imports
-- ✅ **Next Steps Cards** - Always know what to do next
-- ✅ **Better Empty States** - Educational content for new users
+### Major Transformation
+- ✅ **Multi-Channel Lead Capture** - Email, SMS, and social media inquiries
+- ✅ **Automatic Source Tagging** - Every lead tagged with origin channel
+- ✅ **Intent Data Collection** - Track what each lead is looking for
+- ✅ **Channel Performance Tracking** - See which channels bring the best leads
+- ✅ **Simplified CRM** - Focus on capturing and converting leads
+- ✅ **BusinessBlum Integration** - Direct pipeline for capital matching platform
 
-**[See all changes →](README_CHANGES.md)**
+**[See all changes →](INBOUND_LEAD_CAPTURE_CHANGES.md)**
 
 ---
 
@@ -44,65 +43,54 @@ We've created comprehensive guides for every user level:
 
 ---
 
-**A centralized platform designed to ingest leads from email and SMS, engage them at scale using bulk messaging tools, and convert qualified prospects into BusinessBlum customers.**
+**An inbound lead capture system that collects inquiries from multiple channels (SMS, social media, email) for BusinessBlum's capital matching platform.**
 
 ## 🎯 What is BlumBlast?
 
-BlumBlast is the customer acquisition engine for the BusinessBlum ecosystem. It's a dual-purpose application:
+BlumBlast is the lead intake system for BusinessBlum.com. It captures and organizes inbound inquiries from multiple communication channels into a centralized CRM.
 
-1. **Public Marketing Website** - Showcases BlumBlast's capabilities and drives user signups
-2. **Internal CRM Tool** - Used by the BlumBlast team to manage the entire customer acquisition process
-
-### The Customer Journey
+### The Lead Journey
 
 ```
-Marketing Site (blumblast.com)
+Inbound Inquiry (SMS/Social/Email)
         ↓
-Login / Register
+BlumBlast Capture System
         ↓
-Internal Dashboard
+CRM with Source Tagging
         ↓
-Lead Ingestion (Email/SMS) → Bulk Campaigns → Automation → Sales Pipeline
+Lead Assignment & Qualification
         ↓
 BusinessBlum Customer Conversion
 ```
 
 ## 🌐 Application Structure
 
-### Public-Facing (Marketing)
-- **Homepage** - Hero, features, stats, pricing, testimonials
-- **About Page** - Company story and mission  
-- **Features Page** - Detailed product capabilities
-- **Contact Page** - Get in touch with sales team
-
 ### Internal Tool (After Login)
-- **Dashboard** - Command center with actionable insights
-- **Leads** - Import from email/SMS, score, assign, manage
-- **Campaigns** - Create bulk email/SMS campaigns at scale
-- **Workflows** - Visual automation builder for lead nurturing
+- **Dashboard** - Overview of incoming leads by channel
+- **Leads** - View and manage all captured leads with source tags
+- **Channel Capture** - Forms to manually log inbound inquiries
+  - SMS Capture
+  - Email Capture  
+  - Social Media Capture
 - **Opportunities** - Sales pipeline to BusinessBlum conversion
-- **Analytics** - Performance metrics and reporting
-- **Settings** - Team management, integrations, configuration
+- **Analytics** - Channel performance and lead metrics
+- **Settings** - Team management and configuration
 
 ## 🎯 Core Capabilities
 
-### New in v2.0 🆕
-- 🗺️ **Guided Workflow** - GPS-like navigation through campaigns
-- 💬 **Live Chat** - Instant support from bottom-right corner
-- ✅ **Smart Success Messages** - Celebrate wins and show next steps
-- 🎯 **Next Steps Cards** - Always know what to do next
-- 📋 **Campaign-First Flow** - Create campaign → Import leads → Launch
-- ⚡ **Faster Setup** - 3-step campaign creation (down from 5)
+### Lead Capture
+- � **SMS Capture** - Log SMS inquiries with phone number and message
+- 📧 **Email Capture** - Record email inquiries with full context
+- 💬 **Social Media Capture** - Track DMs from Facebook, Instagram, Twitter, LinkedIn, WhatsApp
+- 🏷️ **Automatic Source Tagging** - Every lead tagged with its origin channel
+- 📊 **Intent Classification** - Categorize leads by funding type interest
 
-### Core Features
-- 📥 **Lead Ingestion** - Capture leads from email, SMS, CSV import
-- 📧 **Bulk Messaging** - Send personalized email and SMS campaigns at scale
-- ⚡ **Workflow Automation** - Visual automation builder for lead nurturing sequences
-- 🔥 **Lead Scoring** - Intelligent scoring to identify hot prospects (>80 score)
-- 🎯 **Sales Pipeline** - Manage opportunities from qualification to BusinessBlum conversion
-- 📊 **Analytics Dashboard** - Data-driven insights for campaign performance and lead quality
-- 👥 **Team Collaboration** - Assign leads, share notes, track team activities
-- 🔗 **BusinessBlum Integration** - Track conversions and attribute revenue to campaigns
+### CRM Features
+- 👁️ **Lead Dashboard** - View all leads with channel filters
+- 🔍 **Search & Filter** - Find leads by source, intent, date
+- 📋 **Lead Details** - Complete view of inquiry with original message
+- 👥 **Assignment** - Assign leads to sales team members
+- 🎯 **Pipeline Management** - Track conversion to BusinessBlum customers
 
 ## 🛠️ Tech Stack
 

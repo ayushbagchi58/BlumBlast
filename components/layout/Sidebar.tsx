@@ -13,6 +13,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Zap,
 } from "lucide-react";
 import { useSidebar } from "./MainLayout";
 
@@ -34,9 +35,14 @@ const navigationItems: NavItem[] = [
     icon: <Users className="h-5 w-5" />,
   },
   {
-    label: "Campaigns",
-    href: ROUTES.CAMPAIGNS,
+    label: "Capture Inquiry",
+    href: "/capture",
     icon: <Mail className="h-5 w-5" />,
+  },
+  {
+    label: "Nurture Sequences",
+    href: "/nurture",
+    icon: <Zap className="h-5 w-5" />,
   },
   {
     label: "Opportunities",
@@ -109,7 +115,7 @@ export default function Sidebar() {
             <div className="flex flex-col">
               <span className="text-xl font-bold text-gray-900">BlumBlast</span>
               <span className="text-[10px] leading-tight text-gray-500">
-                Marketing & Lead Automation
+                Lead Capture for BusinessBlum
               </span>
             </div>
           </Link>

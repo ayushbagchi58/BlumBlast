@@ -47,3 +47,5 @@ export { default as Accordion } from "./Accordion";
 
 export { SuccessModal } from "./SuccessModal";
 export { NextStepsCard } from "./NextStepsCard";
+export { Chat } from "./Chat";
+export { QuickStageActions } from "./QuickStageActions";

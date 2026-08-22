@@ -175,14 +175,14 @@ export default function OpportunityDetailPage() {
                   </div>
                 </div>
               )}
-              {lead.title && (
+              {lead.intent && (
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-orange-100 rounded-lg">
                     <Briefcase className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Title</p>
-                    <p className="font-medium text-gray-900">{lead.title}</p>
+                    <p className="text-sm text-gray-600">Intent</p>
+                    <p className="font-medium text-gray-900">{lead.intent.replace(/_/g, ' ')}</p>
                   </div>
                 </div>
               )}
@@ -513,22 +513,19 @@ export default function OpportunityDetailPage() {
             </h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Quality Score</span>
-                <span className="text-lg font-bold text-gray-900">
-                  {lead.score}/100
+                <span className="text-sm text-gray-600">Lead Status</span>
+                <span className="text-lg font-bold text-gray-900 capitalize">
+                  {lead.status}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  className={`h-3 rounded-full ${
-                    lead.score >= 80
-                      ? "bg-green-600"
-                      : lead.score >= 50
-                      ? "bg-yellow-500"
-                      : "bg-gray-400"
-                  }`}
-                  style={{ width: `${lead.score}%` }}
-                />
+              <div className="mt-2">
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+                  lead.status === 'qualified' ? 'bg-green-100 text-green-800' :
+                  lead.status === 'engaged' ? 'bg-blue-100 text-blue-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {lead.status}
+                </span>
               </div>
             </div>
           </Card>

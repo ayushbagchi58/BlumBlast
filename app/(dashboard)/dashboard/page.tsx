@@ -1,11 +1,8 @@
 "use client";
 
 import { Card, CardHeader, CardBody, Badge, Button, NextStepsCard } from "@/components/ui";
-import {
-  mockDashboardMetrics,
-  getHotLeads,
-  getRecentActivities,
-} from "@/lib/mockData";
+import { mockLeads, getRecentActivities } from "@/lib/mockData";
+import type { Lead } from "@/lib/types";
 import {
   Users,
   Mail,
@@ -15,12 +12,13 @@ import {
   ArrowUp,
   ArrowDown,
   Plus,
-  Upload,
   Workflow,
   Eye,
   UserPlus,
   Send,
   BarChart3,
+  MessageSquare,
+  Share2,
 } from "lucide-react";
 import { useCountUp } from "@/hooks";
 import Link from "next/link";
@@ -132,9 +130,47 @@ function QuickAction({ icon, label, description, href, color }: QuickActionProps
 
 export default function DashboardPage() {
   const [currentDate, setCurrentDate] = useState("");
-  const metrics = mockDashboardMetrics;
-  const hotLeads = getHotLeads();
+  const [leads, setLeads] = useState<Lead[]>([]);
   const recentActivities = getRecentActivities(5);
+
+  // Load leads from localStorage + mockLeads (same as leads page)
+  useEffect(() => {
+    const loadLeads = () => {
+      try {
+        const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
+        let allLeads = [...mockLeads]; // Start with mock data
+        
+        if (importedLeadsData) {
+          const importedLeads = JSON.parse(importedLeadsData);
+          // Merge: imported leads first, then mock leads (avoiding duplicates by ID)
+          const mockLeadIds = new Set(mockLeads.map(l => l.id));
+          const uniqueImportedLeads = importedLeads.filter((lead: Lead) => !mockLeadIds.has(lead.id));
+          allLeads = [...uniqueImportedLeads, ...mockLeads];
+        }
+        
+        setLeads(allLeads);
+      } catch (e) {
+        console.error("Error loading leads:", e);
+        setLeads(mockLeads);
+      }
+    };
+    
+    loadLeads();
+  }, []);
+
+  // Calculate metrics from actual leads data
+  const metrics = {
+    newLeadsToday: leads.filter(lead => {
+      const today = new Date();
+      const leadDate = new Date(lead.createdAt);
+      return leadDate.toDateString() === today.toDateString();
+    }).length,
+    emailInquiries: leads.filter(lead => lead.source === 'email').length,
+    smsInquiries: leads.filter(lead => lead.source === 'sms').length,
+    socialMediaLeads: leads.filter(lead => 
+      ['facebook', 'instagram', 'twitter', 'linkedin'].includes(lead.source)
+    ).length,
+  };
 
   useEffect(() => {
     setCurrentDate(
@@ -149,77 +185,86 @@ export default function DashboardPage() {
 
   const metricCards = [
     {
-      label: "New Leads Today",
+      label: "Leads Today",
       value: metrics.newLeadsToday,
       icon: <Users className="h-6 w-6" />,
       color: "bg-blue-500",
-      change: metrics.newLeadsChange,
+      change: 23,
       delay: 0,
       actionLabel: "View All",
       actionHref: "/leads",
-    },
-    {
-      label: "Active Campaigns",
-      value: metrics.activeCampaigns,
-      icon: <Mail className="h-6 w-6" />,
-      color: "bg-green-500",
-      change: metrics.activeCampaignsChange,
-      delay: 100,
-      actionLabel: "Manage",
-      actionHref: "/campaigns",
-    },
-    {
-      label: "Hot Leads",
-      value: metrics.hotLeads,
-      icon: <Target className="h-6 w-6" />,
-      color: "bg-orange-500",
-      change: metrics.hotLeadsChange,
-      delay: 200,
-      actionLabel: "Contact Now",
-      actionHref: "/leads?filter=hot",
-    },
-    {
-      label: "Revenue This Month",
-      value: metrics.revenueThisMonth,
-      icon: <TrendingUp className="h-6 w-6" />,
-      color: "bg-purple-500",
-      change: metrics.revenueChange,
-      prefix: "$",
+      prefix: "",
       suffix: "",
       decimals: 0,
+    },
+    {
+      label: "Email Inquiries",
+      value: metrics.emailInquiries,
+      icon: <Mail className="h-6 w-6" />,
+      color: "bg-green-500",
+      change: 15,
+      delay: 100,
+      actionLabel: "Capture",
+      actionHref: "/capture",
+      prefix: "",
+      suffix: "",
+      decimals: 0,
+    },
+    {
+      label: "SMS Inquiries",
+      value: metrics.smsInquiries,
+      icon: <MessageSquare className="h-6 w-6" />,
+      color: "bg-orange-500",
+      change: 18,
+      delay: 200,
+      actionLabel: "Capture",
+      actionHref: "/capture",
+      prefix: "",
+      suffix: "",
+      decimals: 0,
+    },
+    {
+      label: "Social Media Leads",
+      value: metrics.socialMediaLeads,
+      icon: <Share2 className="h-6 w-6" />,
+      color: "bg-purple-500",
+      change: 12,
       delay: 300,
-      actionLabel: "Analytics",
-      actionHref: "/analytics",
+      actionLabel: "Capture",
+      actionHref: "/capture",
+      prefix: "",
+      suffix: "",
+      decimals: 0,
     },
   ];
 
   const quickActions = [
     {
-      icon: <Plus className="h-5 w-5" />,
-      label: "Create Campaign",
-      description: "Send email or SMS to engage leads at scale",
-      href: "/campaigns/new",
+      icon: <Mail className="h-5 w-5" />,
+      label: "Capture Email Inquiry",
+      description: "Log an email inquiry from a potential customer",
+      href: "/capture",
       color: "bg-blue-500",
     },
     {
-      icon: <Upload className="h-5 w-5" />,
-      label: "Import Leads",
-      description: "Bulk import leads via CSV or integrations",
-      href: "/leads/import",
+      icon: <MessageSquare className="h-5 w-5" />,
+      label: "Capture SMS Inquiry",
+      description: "Record an SMS message from a lead",
+      href: "/capture",
       color: "bg-green-500",
     },
     {
-      icon: <Workflow className="h-5 w-5" />,
-      label: "Build Workflow",
-      description: "Automate lead nurturing sequences",
-      href: "/workflows/new",
+      icon: <Share2 className="h-5 w-5" />,
+      label: "Capture Social Media",
+      description: "Log DMs from social platforms",
+      href: "/capture",
       color: "bg-purple-500",
     },
     {
-      icon: <Target className="h-5 w-5" />,
-      label: "View Hot Leads",
-      description: "Contact high-score prospects immediately",
-      href: "/leads?filter=hot",
+      icon: <Users className="h-5 w-5" />,
+      label: "View All Leads",
+      description: "See all captured leads with source tags",
+      href: "/leads",
       color: "bg-orange-500",
     },
   ];
@@ -228,9 +273,9 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Command Center</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-1 text-gray-600">
-          {currentDate || "Loading..."}
+          Lead capture system for BusinessBlum.com • {currentDate || "Loading..."}
         </p>
       </div>
 
@@ -271,29 +316,38 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Hot Leads Requiring Action */}
+      {/* Recent Captured Leads */}
       <Card>
         <CardHeader
-          title="🔥 Hot Leads Requiring Action"
-          subtitle={`${hotLeads.length} prospects with score > 80 ready for contact`}
+          title="📥 Recently Captured Leads"
+          subtitle={`${leads.length} total leads captured from multiple channels`}
         />
         <CardBody>
-          {hotLeads.length > 0 ? (
+          {leads.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="border-b border-gray-200 bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                      Lead
+                      Lead Details
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
                       Company
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                      Score
+                      Intent
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                      Last Activity
+                      Funding Amount
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Source
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Message
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Status
                     </th>
                     <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
                       Actions
@@ -301,7 +355,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {hotLeads.map((lead) => (
+                  {leads.map((lead) => (
                     <tr key={lead.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div>
@@ -309,31 +363,42 @@ export default function DashboardPage() {
                             {lead.firstName} {lead.lastName}
                           </p>
                           <p className="text-sm text-gray-600">{lead.email}</p>
+                          <p className="text-sm text-gray-600">{lead.phone}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-900">{lead.company || "—"}</td>
                       <td className="px-4 py-3">
-                        <Badge
-                          variant={lead.score >= 90 ? "success" : lead.score >= 80 ? "warning" : "default"}
-                        >
-                          {lead.score}
+                        <span className="text-sm text-gray-900">
+                          {lead.intent ? lead.intent.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) : "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-900 font-medium">
+                        {lead.fundingAmount || "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant="default">
+                          {lead.source}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {lead.lastActivityAt
-                          ? new Date(lead.lastActivityAt).toLocaleString()
-                          : "—"}
+                      <td className="px-4 py-3">
+                        <span className="text-sm text-gray-600 max-w-xs truncate block">
+                          {lead.message || lead.sourceDetails || "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={
+                          lead.status === "new" ? "default" : 
+                          lead.status === "qualified" ? "success" : 
+                          lead.status === "engaged" ? "warning" : "default"
+                        }>
+                          {lead.status}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-2">
                           <Link href={`/leads/${lead.id}`}>
                             <Button variant="ghost" size="sm">
                               <Eye className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Link href={`/campaigns/new?leadId=${lead.id}`}>
-                            <Button variant="ghost" size="sm">
-                              <Send className="h-4 w-4" />
                             </Button>
                           </Link>
                           <Link href={`/opportunities/new?leadId=${lead.id}`}>
@@ -350,9 +415,9 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="py-8 text-center text-gray-600">
-              <Target className="mx-auto mb-2 h-12 w-12 text-gray-400" />
-              <p>No hot leads at the moment</p>
-              <p className="text-sm">Check back later for high-scoring prospects</p>
+              <Users className="mx-auto mb-2 h-12 w-12 text-gray-400" />
+              <p>No leads captured yet</p>
+              <p className="text-sm">Start capturing inquiries from your channels</p>
             </div>
           )}
         </CardBody>
@@ -407,30 +472,30 @@ export default function DashboardPage() {
 
       {/* Recommended Next Steps */}
       <NextStepsCard
-        title="🚀 Recommended Next Steps"
+        title="🚀 Get Started"
         steps={[
           {
-            icon: Plus,
-            title: "Create Your First Campaign",
-            description: "Design and set up a campaign to reach your leads",
-            href: "/campaigns/new",
+            icon: Mail,
+            title: "Capture Your First Lead",
+            description: "Log an inquiry from email, SMS, or social media",
+            href: "/capture",
           },
           {
-            icon: Upload,
-            title: "Import Leads",
-            description: "Add leads who will receive your campaigns",
-            href: "/leads/import",
+            icon: Users,
+            title: "View All Leads",
+            description: "See all captured leads with source tagging",
+            href: "/leads",
           },
           {
-            icon: Workflow,
-            title: "Set Up Automation",
-            description: "Create automated workflows to nurture leads",
-            href: "/workflows",
+            icon: Target,
+            title: "Create Opportunity",
+            description: "Convert qualified leads to opportunities",
+            href: "/opportunities/new",
           },
           {
             icon: BarChart3,
             title: "View Analytics",
-            description: "Track performance and optimize your campaigns",
+            description: "Track which channels bring the best leads",
             href: "/analytics",
           },
         ]}
