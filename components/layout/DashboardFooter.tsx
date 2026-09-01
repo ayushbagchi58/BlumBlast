@@ -6,7 +6,7 @@ export default function DashboardFooter() {
   const currentYear = 2026;
 
   return (
-    <footer className="mt-auto border-t border-gray-200 bg-white">
+    <footer className="border-t border-gray-200 bg-white">
       <div className="px-6 py-4">
         <div className="flex flex-col items-center justify-between gap-3 text-sm text-gray-600 sm:flex-row">
           {/* Copyright */}

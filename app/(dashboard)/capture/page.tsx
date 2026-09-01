@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, Button, Input } from "@/components/ui";
 import { Mail, MessageSquare, Share2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +11,7 @@ import { generateSignupUrl } from "@/lib/utils/leadScoring";
 import { getNurtureSequenceByIntent } from "@/lib/data/nurtureSequences";
 
 export default function CaptureInquiryPage() {
+  const router = useRouter();
   const [selectedChannel, setSelectedChannel] = useState<"email" | "sms" | "social" | null>(null);
 
   return (
@@ -93,15 +95,15 @@ export default function CaptureInquiryPage() {
       )}
 
       {/* Show Form Based on Selected Channel */}
-      {selectedChannel === "email" && <EmailCaptureForm onBack={() => setSelectedChannel(null)} />}
-      {selectedChannel === "sms" && <SMSCaptureForm onBack={() => setSelectedChannel(null)} />}
-      {selectedChannel === "social" && <SocialCaptureForm onBack={() => setSelectedChannel(null)} />}
+      {selectedChannel === "email" && <EmailCaptureForm onBack={() => setSelectedChannel(null)} router={router} />}
+      {selectedChannel === "sms" && <SMSCaptureForm onBack={() => setSelectedChannel(null)} router={router} />}
+      {selectedChannel === "social" && <SocialCaptureForm onBack={() => setSelectedChannel(null)} router={router} />}
     </div>
   );
 }
 
 // Email Capture Form
-function EmailCaptureForm({ onBack }: { onBack: () => void }) {
+function EmailCaptureForm({ onBack, router }: { onBack: () => void; router: ReturnType<typeof useRouter> }) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -118,9 +120,11 @@ function EmailCaptureForm({ onBack }: { onBack: () => void }) {
     
     // Get matching nurture sequence
     const nurtureSequence = getNurtureSequenceByIntent(formData.intent);
+
+    const leadId = `lead-${Date.now()}`;
     
     const newLead = {
-      id: `lead-${Date.now()}`,
+      id: leadId,
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
@@ -165,23 +169,34 @@ function EmailCaptureForm({ onBack }: { onBack: () => void }) {
     // Save back to localStorage
     localStorage.setItem("blum-blast-imported-leads", JSON.stringify(existingLeads));
 
+    // ── Seed the chat with the original inbound message ──────────────────────
+    // This makes the lead's first message appear in the Chat tab automatically,
+    // exactly like HubSpot / Salesforce — the original inquiry starts the thread.
+    if (formData.message.trim()) {
+      const inboundMessage = {
+        id: `msg-${Date.now()}`,
+        text: formData.message.trim(),
+        sender: "lead" as const,
+        channel: "email" as const,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem(
+        `blum-blast-chat-${leadId}`,
+        JSON.stringify([inboundMessage])
+      );
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     toast.success(
       nurtureSequence 
         ? `Email inquiry captured and enrolled in "${nurtureSequence.name}"!`
         : "Email inquiry captured successfully!"
     );
     
-    // Reset form
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      company: "",
-      intent: "business_loan",
-      fundingAmount: "",
-      message: "",
-    });
+    // Redirect to the new lead's detail page
+    setTimeout(() => {
+      router.push(`/leads/${leadId}`);
+    }, 500); // small delay so user sees the toast
   };
 
   return (
@@ -289,7 +304,7 @@ function EmailCaptureForm({ onBack }: { onBack: () => void }) {
 }
 
 // SMS Capture Form
-function SMSCaptureForm({ onBack }: { onBack: () => void }) {
+function SMSCaptureForm({ onBack, router }: { onBack: () => void; router: ReturnType<typeof useRouter> }) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -306,9 +321,11 @@ function SMSCaptureForm({ onBack }: { onBack: () => void }) {
     
     // Get matching nurture sequence
     const nurtureSequence = getNurtureSequenceByIntent(formData.intent);
+
+    const leadId = `lead-${Date.now()}`;
     
     const newLead = {
-      id: `lead-${Date.now()}`,
+      id: leadId,
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
@@ -353,22 +370,32 @@ function SMSCaptureForm({ onBack }: { onBack: () => void }) {
     // Save back to localStorage
     localStorage.setItem("blum-blast-imported-leads", JSON.stringify(existingLeads));
 
+    // ── Seed the chat with the original inbound SMS message ──────────────────
+    if (formData.message.trim()) {
+      const inboundMessage = {
+        id: `msg-${Date.now()}`,
+        text: formData.message.trim(),
+        sender: "lead" as const,
+        channel: "sms" as const,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem(
+        `blum-blast-chat-${leadId}`,
+        JSON.stringify([inboundMessage])
+      );
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     toast.success(
       nurtureSequence 
         ? `SMS inquiry captured and enrolled in "${nurtureSequence.name}"!`
         : "SMS inquiry captured successfully!"
     );
     
-    setFormData({
-      firstName: "",
-      lastName: "",
-      phone: "",
-      email: "",
-      company: "",
-      intent: "business_loan",
-      fundingAmount: "",
-      message: "",
-    });
+    // Redirect to the new lead's detail page
+    setTimeout(() => {
+      router.push(`/leads/${leadId}`);
+    }, 500);
   };
 
   return (
@@ -475,7 +502,7 @@ function SMSCaptureForm({ onBack }: { onBack: () => void }) {
 }
 
 // Social Media Capture Form
-function SocialCaptureForm({ onBack }: { onBack: () => void }) {
+function SocialCaptureForm({ onBack, router }: { onBack: () => void; router: ReturnType<typeof useRouter> }) {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -493,16 +520,18 @@ function SocialCaptureForm({ onBack }: { onBack: () => void }) {
     
     // Get matching nurture sequence
     const nurtureSequence = getNurtureSequenceByIntent(formData.intent);
+
+    const leadId = `lead-${Date.now()}`;
     
     const newLead = {
-      id: `lead-${Date.now()}`,
+      id: leadId,
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
       phone: formData.phone,
       company: formData.company,
       source: formData.platform,
-      sourceDetails: `${formData.platform} DM`,
+      sourceDetails: `${formData.platform.charAt(0).toUpperCase() + formData.platform.slice(1)} DM`,
       intent: formData.intent,
       fundingAmount: formData.fundingAmount,
       message: formData.message,
@@ -540,23 +569,32 @@ function SocialCaptureForm({ onBack }: { onBack: () => void }) {
     // Save back to localStorage
     localStorage.setItem("blum-blast-imported-leads", JSON.stringify(existingLeads));
 
+    // ── Seed the chat with the original inbound social DM ────────────────────
+    if (formData.message.trim()) {
+      const inboundMessage = {
+        id: `msg-${Date.now()}`,
+        text: formData.message.trim(),
+        sender: "lead" as const,
+        channel: formData.platform as string,
+        timestamp: new Date().toISOString(),
+      };
+      localStorage.setItem(
+        `blum-blast-chat-${leadId}`,
+        JSON.stringify([inboundMessage])
+      );
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     toast.success(
       nurtureSequence 
         ? `${formData.platform} inquiry captured and enrolled in "${nurtureSequence.name}"!`
         : `${formData.platform} inquiry captured successfully!`
     );
     
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      company: "",
-      platform: "facebook",
-      intent: "business_loan",
-      fundingAmount: "",
-      message: "",
-    });
+    // Redirect to the new lead's detail page
+    setTimeout(() => {
+      router.push(`/leads/${leadId}`);
+    }, 500);
   };
 
   return (

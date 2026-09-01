@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Card, Button, Input, EmptyState } from "@/components/ui";
+import ImportLeadsModal from "@/components/ui/ImportLeadsModal";
 import { mockLeads } from "@/lib/mockData";
 import type { Lead } from "@/lib/types";
 import {
@@ -20,6 +21,7 @@ import {
   MessagesSquare,
   Phone,
   MessageCircle,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { useDebounce } from "@/hooks";
@@ -77,6 +79,7 @@ export default function LeadsPage() {
   const [sortField, setSortField] = useState<keyof Lead>("createdAt");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -223,6 +226,12 @@ export default function LeadsPage() {
     return stats;
   }, [leads]);
 
+  const handleImportComplete = (importedLeads: Lead[]) => {
+    setLeads((prev) => [...importedLeads, ...prev]);
+    toast.success(`Successfully imported ${importedLeads.length} leads!`);
+    setIsImportModalOpen(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -233,12 +242,29 @@ export default function LeadsPage() {
             {filteredLeads.length} leads {selectedLeads.size > 0 && `• ${selectedLeads.size} selected`}
           </p>
         </div>
-        <Link href="/capture">
-          <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
-            Capture New Inquiry
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            leftIcon={<Upload className="h-4 w-4" />}
+            onClick={() => setIsImportModalOpen(true)}
+          >
+            Import Leads
           </Button>
-        </Link>
+          <Link href="/capture">
+            <Button variant="primary" leftIcon={<Plus className="h-4 w-4" />}>
+              Capture New Inquiry
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportLeadsModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportComplete={handleImportComplete}
+        existingLeads={leads}
+      />
 
       {/* Channel Filter Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">

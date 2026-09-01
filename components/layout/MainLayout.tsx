@@ -40,7 +40,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         toggleMobileMenu,
       }}
     >
-      <div className="min-h-screen bg-gray-50">
+      <div className="bg-gray-50">
         {/* Mobile Overlay */}
         {isMobileMenuOpen && (
           <div
@@ -55,15 +55,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
         {/* Header */}
         <Header />
 
-        {/* Main Content Area */}
-        <main
-          className={cn("pt-16 transition-all duration-300", isCollapsed ? "lg:ml-20" : "lg:ml-64")}
+        {/* Main Content + Footer */}
+        <div
+          className={cn(
+            "flex flex-col transition-all duration-300",
+            isCollapsed ? "lg:ml-20" : "lg:ml-64"
+          )}
+          style={{ minHeight: '100vh' }}
         >
-          <div className="p-4 sm:p-6">{children}</div>
-        </main>
-
-        {/* Footer */}
-        <div className={cn("transition-all duration-300", isCollapsed ? "lg:ml-20" : "lg:ml-64")}>
+          <main className="flex-1 p-4 pt-20 sm:p-6 sm:pt-20">{children}</main>
           <DashboardFooter />
         </div>
       </div>

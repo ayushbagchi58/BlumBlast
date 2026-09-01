@@ -286,6 +286,7 @@ export interface CampaignAnalytics {
   delivered: number;
   opened: number;
   clicked: number;
+  replied: number;
   unsubscribed: number;
   bounced: number;
   openRate: number;
@@ -293,6 +294,10 @@ export interface CampaignAnalytics {
   clickToOpenRate: number;
   unsubscribeRate: number;
   bounceRate: number;
+  deliveryRate: number;
+  replyRate: number;
+  conversions: number;
+  revenue: number;
   topLinks: Array<{
     url: string;
     clicks: number;
@@ -457,4 +462,162 @@ export interface Integration {
   lastSyncAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// ─── Messaging & Conversations ────────────────────────────────────────────────
+
+/**
+ * Message Channel Type
+ */
+export type MessageChannel = LeadSource | 'agent';
+
+/**
+ * Message Sender
+ */
+export type MessageSender = 'lead' | 'agent' | 'system';
+
+/**
+ * Message Type
+ */
+export type MessageType = 'inbound' | 'outbound' | 'automated';
+
+/**
+ * Message Status
+ */
+export type MessageStatus =
+  | 'sent'
+  | 'delivered'
+  | 'read'
+  | 'failed'
+  | 'bounced';
+
+/**
+ * Message - Individual email/SMS/social message
+ */
+export interface Message {
+  id: string;
+  conversationId: string;
+  leadId: string;
+  channel: MessageChannel;
+  sender: MessageSender;
+  type: MessageType;
+  
+  // Content
+  subject?: string;              // For emails
+  body: string;
+  attachments?: Array<{
+    id: string;
+    name: string;
+    url: string;
+    type: string;
+    size: number;
+  }>;
+  
+  // Metadata
+  status: MessageStatus;
+  campaignId?: string;           // If part of bulk campaign
+  sequenceId?: string;           // If part of nurture sequence
+  sequenceStepIndex?: number;    // Step number in sequence
+  automationTriggered?: boolean; // Was this auto-sent?
+  
+  // AI Analysis
+  sentiment?: 'positive' | 'neutral' | 'negative';
+  intent?: string;               // Detected intent from AI
+  requiresResponse?: boolean;    // AI thinks agent should reply
+  
+  // Timestamps
+  sentAt: Date;
+  deliveredAt?: Date;
+  readAt?: Date;
+  repliedAt?: Date;
+  createdAt: Date;
+}
+
+/**
+ * Conversation - Thread of messages with a lead
+ */
+export interface Conversation {
+  id: string;
+  leadId: string;
+  leadName: string;
+  leadEmail: string;
+  leadPhone?: string;
+  leadAvatar?: string;
+  
+  // Conversation metadata
+  channel: MessageChannel;       // Primary channel
+  subject?: string;              // For email threads
+  status: 'open' | 'resolved' | 'snoozed';
+  assignedTo?: string;           // Agent user ID
+  
+  // Message stats
+  messageCount: number;
+  unreadCount: number;
+  lastMessagePreview: string;
+  lastMessageAt: Date;
+  lastMessageSender: MessageSender;
+  
+  // Lead info snapshot
+  leadStatus: LeadStatus;
+  leadScore?: number;
+  leadTemperature?: 'hot' | 'warm' | 'cool' | 'cold';
+  
+  // Timestamps
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Conversation Filter Options
+ */
+export interface ConversationFilter {
+  status?: 'open' | 'resolved' | 'snoozed' | 'all';
+  channel?: MessageChannel | 'all';
+  assignedTo?: string | 'all';
+  unreadOnly?: boolean;
+  needsReply?: boolean;
+  searchQuery?: string;
+}
+
+/**
+ * Bulk Reply Template
+ */
+export interface ReplyTemplate {
+  id: string;
+  name: string;
+  subject?: string;
+  body: string;
+  channel: MessageChannel[];
+  category: 'greeting' | 'followup' | 'question' | 'closing' | 'custom';
+  variables: string[];          // e.g., ["firstName", "fundingAmount"]
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * Campaign Analytics
+ */
+export interface CampaignAnalytics {
+  campaignId: string;
+  totalSent: number;
+  delivered: number;
+  opened: number;
+  clicked: number;
+  replied: number;
+  unsubscribed: number;
+  bounced: number;
+  
+  // Rates
+  deliveryRate: number;         // %
+  openRate: number;             // %
+  clickRate: number;            // %
+  replyRate: number;            // %
+  unsubscribeRate: number;      // %
+  
+  // Revenue (if tracked)
+  conversions: number;
+  revenue: number;
+  
+  createdAt: Date;
 }

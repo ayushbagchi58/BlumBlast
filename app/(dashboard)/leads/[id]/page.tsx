@@ -480,6 +480,11 @@ export default function LeadDetailPage({ params }: PageProps) {
                   <Chat
                     leadId={leadId}
                     leadName={`${lead.firstName} ${lead.lastName}`}
+                    leadSource={lead.source}
+                    initialMessage={lead.message}
+                    initialMessageTimestamp={lead.createdAt}
+                    leadStatus={lead.status}
+                    lastActivityAt={lead.lastActivityAt || lead.updatedAt}
                     onSendMessage={(_message) => {
                       toast.success("Message sent!");
                     }}
