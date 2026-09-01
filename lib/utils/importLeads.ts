@@ -1,7 +1,7 @@
 // Lead Import Utility Functions
 // Handles CSV, Excel (XLSX, XLS), and ZIP file parsing with validation
 
-import Papa from "papaparse";
+import Papa, { ParseResult } from "papaparse";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import type { Lead, LeadSource, LeadIntent } from "@/lib/types";
@@ -288,10 +288,10 @@ export async function parseCSV(file: File): Promise<ImportRow[]> {
           .replace(/\s+/g, "")
           .replace(/[^a-z0-9]/g, "");
       },
-      complete: (results) => {
+      complete: (results: ParseResult<ImportRow>) => {
         resolve(results.data as ImportRow[]);
       },
-      error: (error) => {
+      error: (error: Error) => {
         reject(new Error(`CSV parsing failed: ${error.message}`));
       },
     });
