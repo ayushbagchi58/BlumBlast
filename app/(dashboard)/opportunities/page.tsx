@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button, Card, Badge } from "@/components/ui";
 import { mockOpportunities, mockLeads } from "@/lib/mockData";
 import type { Opportunity, OpportunityStage } from "@/lib/types";
-import { Plus, DollarSign, TrendingUp, Calendar } from "lucide-react";
+import { DollarSign, TrendingUp, Calendar } from "lucide-react";
 
 // Stage configuration
 const STAGES: Record<
@@ -173,12 +173,6 @@ export default function OpportunitiesPage() {
               List
             </Button>
           </div>
-          <Link href="/opportunities/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              New Opportunity
-            </Button>
-          </Link>
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Button, Badge, Textarea, Tabs, Chat, QuickStageActions } from "@/components/ui";
+import { Card, Button, Badge, Textarea, Tabs, QuickStageActions } from "@/components/ui";
 import { mockLeads, mockActivities } from "@/lib/mockData";
 import {
   ArrowLeft,
@@ -16,7 +16,6 @@ import {
   Edit,
   Trash2,
   Save,
-  Target,
   Activity,
   StickyNote,
   TrendingUp,
@@ -25,6 +24,7 @@ import {
   ExternalLink,
   CheckCircle2,
   AlertCircle,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import type { Lead, LeadEngagement } from "@/lib/types";
@@ -47,7 +47,7 @@ export default function LeadDetailPage({ params }: PageProps) {
   // Find lead from mock data or localStorage
   const [lead, setLead] = useState<Lead | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState("chat");
+  const [activeTab, setActiveTab] = useState("timeline");
   const [newNote, setNewNote] = useState("");
 
   // Sample engagements (in production, fetch from API)
@@ -209,11 +209,6 @@ export default function LeadDetailPage({ params }: PageProps) {
           >
             SMS
           </Button>
-          <Link href={`/opportunities/new?leadId=${leadId}`}>
-            <Button variant="primary" leftIcon={<Target className="h-4 w-4" />}>
-              Convert to Opportunity
-            </Button>
-          </Link>
         </div>
       </div>
 
@@ -275,7 +270,7 @@ export default function LeadDetailPage({ params }: PageProps) {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <Target className="h-5 w-5 text-green-600" />
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
                   <h3 className="text-lg font-semibold text-gray-900">
                     BusinessBlum Conversion
                   </h3>
@@ -460,13 +455,12 @@ export default function LeadDetailPage({ params }: PageProps) {
             </div>
           </Card>
 
-          {/* Chat & Communication */}
+          {/* Lead Activity & Communication */}
           <Card>
             <Tabs
               defaultTab={activeTab}
               onChange={setActiveTab}
               tabs={[
-                { id: "chat", label: "💬 Chat", content: null },
                 { id: "timeline", label: "Timeline", content: null },
                 { id: "notes", label: "Notes", content: null },
                 { id: "details", label: "Details", content: null },
@@ -474,24 +468,6 @@ export default function LeadDetailPage({ params }: PageProps) {
             />
 
             <div className="mt-6">
-              {/* Chat Tab */}
-              {activeTab === "chat" && (
-                <div>
-                  <Chat
-                    leadId={leadId}
-                    leadName={`${lead.firstName} ${lead.lastName}`}
-                    leadSource={lead.source}
-                    initialMessage={lead.message}
-                    initialMessageTimestamp={lead.createdAt}
-                    leadStatus={lead.status}
-                    lastActivityAt={lead.lastActivityAt || lead.updatedAt}
-                    onSendMessage={(_message) => {
-                      toast.success("Message sent!");
-                    }}
-                  />
-                </div>
-              )}
-
               {/* Timeline Tab */}
               {activeTab === "timeline" && (
                 <div className="space-y-4">
@@ -540,7 +516,7 @@ export default function LeadDetailPage({ params }: PageProps) {
                   {/* Lead Created */}
                   <div className="flex gap-4">
                     <div className="flex items-center justify-center rounded-lg bg-blue-100 p-3 h-12 w-12 flex-shrink-0">
-                      <Target className="h-5 w-5 text-blue-600" />
+                      <Users className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">Lead Created</p>
@@ -750,13 +726,6 @@ export default function LeadDetailPage({ params }: PageProps) {
                 <Zap className="mr-2 h-4 w-4" />
                 Enroll in Nurture
               </Button>
-
-              <Link href={`/opportunities/new?leadId=${leadId}`}>
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Target className="mr-2 h-4 w-4" />
-                  Create Opportunity
-                </Button>
-              </Link>
 
               <Button
                 variant="outline"

@@ -20,7 +20,6 @@ import {
   MessageSquare,
   MessagesSquare,
   Phone,
-  MessageCircle,
   Upload,
 } from "lucide-react";
 import Link from "next/link";
@@ -56,20 +55,6 @@ const getIntentLabel = (intent?: string) => {
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
-};
-
-// Get message count for a lead
-const getMessageCount = (leadId: string): number => {
-  try {
-    const savedMessages = localStorage.getItem(`blum-blast-chat-${leadId}`);
-    if (savedMessages) {
-      const messages = JSON.parse(savedMessages);
-      return messages.length;
-    }
-  } catch (e) {
-    console.error("Error loading message count:", e);
-  }
-  return 0;
 };
 
 export default function LeadsPage() {
@@ -474,16 +459,6 @@ export default function LeadsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
-                        <Link href={`/leads/${lead.id}`}>
-                          <Button variant="ghost" size="sm" className="relative">
-                            <MessageCircle className="h-4 w-4" />
-                            {getMessageCount(lead.id) > 0 && (
-                              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs text-white">
-                                {getMessageCount(lead.id)}
-                              </span>
-                            )}
-                          </Button>
-                        </Link>
                         <Link href={`/leads/${lead.id}`}>
                           <Button variant="ghost" size="sm">
                             <Eye className="h-4 w-4" />

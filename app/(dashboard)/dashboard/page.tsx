@@ -401,7 +401,7 @@ export default function DashboardPage() {
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Link href={`/opportunities/new?leadId=${lead.id}`}>
+                          <Link href={`/leads/${lead.id}`}>
                             <Button variant="primary" size="sm">
                               Convert
                             </Button>

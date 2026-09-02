@@ -150,10 +150,19 @@ export function QuickStageActions({
 
   const actions = [
     {
+      icon: <Target className="h-4 w-4" />,
+      label: "Mark as New",
+      description: "Just started talking",
+      color: "bg-blue-500 hover:bg-blue-600",
+      stage: "new",
+      message: `Created opportunity for ${leadName}!`,
+      needsOpportunity: true,
+    },
+    {
       icon: <Phone className="h-4 w-4" />,
       label: "Mark as Contacted",
-      description: "You've called or messaged them",
-      color: "bg-blue-500 hover:bg-blue-600",
+      description: "They replied back to you",
+      color: "bg-purple-500 hover:bg-purple-600",
       stage: "contacted",
       message: `Marked ${leadName} as contacted!`,
       needsOpportunity: true,
@@ -162,7 +171,7 @@ export function QuickStageActions({
       icon: <FileText className="h-4 w-4" />,
       label: "Send Proposal",
       description: "Share quote or funding offer",
-      color: "bg-purple-500 hover:bg-purple-600",
+      color: "bg-orange-500 hover:bg-orange-600",
       stage: "proposal",
       message: `Moved ${leadName} to Proposal stage!`,
       needsOpportunity: true,
@@ -171,7 +180,7 @@ export function QuickStageActions({
       icon: <Handshake className="h-4 w-4" />,
       label: "Start Negotiation",
       description: "Discussing terms with lead",
-      color: "bg-orange-500 hover:bg-orange-600",
+      color: "bg-yellow-500 hover:bg-yellow-600",
       stage: "negotiation",
       message: `Moved ${leadName} to Negotiation!`,
       needsOpportunity: true,
@@ -226,17 +235,6 @@ export function QuickStageActions({
               </div>
             </button>
           ))}
-        </div>
-
-        <div className="border-t border-gray-200 pt-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => router.push(`/opportunities/new?leadId=${leadId}`)}
-          >
-            <Target className="h-4 w-4 mr-2" />
-            Create Opportunity Manually
-          </Button>
         </div>
       </div>
     </Card>

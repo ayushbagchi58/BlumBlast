@@ -14,8 +14,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
-  Inbox,
-  Megaphone,
 } from "lucide-react";
 import { useSidebar } from "./MainLayout";
 
@@ -32,11 +30,6 @@ const navigationItems: NavItem[] = [
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
-    label: "Inbox",
-    href: "/inbox",
-    icon: <Inbox className="h-5 w-5" />,
-  },
-  {
     label: "Leads",
     href: ROUTES.LEADS,
     icon: <Users className="h-5 w-5" />,
@@ -50,11 +43,6 @@ const navigationItems: NavItem[] = [
     label: "Nurture Sequences",
     href: "/nurture",
     icon: <Zap className="h-5 w-5" />,
-  },
-  {
-    label: "Campaigns",
-    href: "/campaigns",
-    icon: <Megaphone className="h-5 w-5" />,
   },
   {
     label: "Opportunities",
