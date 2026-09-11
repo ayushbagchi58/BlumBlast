@@ -5,10 +5,8 @@ import { useState, useEffect } from "react";
  * SSR-safe: always returns initialValue on server, syncs with localStorage on client after mount.
  */
 export function useLocalStorage<T>(key: string, initialValue: T) {
-  // Always start with initialValue (consistent server/client first render)
   const [storedValue, setStoredValue] = useState<T>(initialValue);
 
-  // After mount, sync with localStorage
   useEffect(() => {
     try {
       const item = window.localStorage.getItem(key);
@@ -20,7 +18,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       console.error(`Error loading localStorage key "${key}":`, error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []);
 
   const setValue = (value: T | ((val: T) => T)) => {
     try {

@@ -21,7 +21,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export default function ConversionAnalyticsPage() {
   const [dateRange, setDateRange] = useState("30d");
 
-  // Mock data - in production, fetch from API
   const mockData = useMemo(() => {
     return {
       overview: {
@@ -68,7 +67,6 @@ export default function ConversionAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Conversion Analytics</h1>
@@ -102,7 +100,6 @@ export default function ConversionAnalyticsPage() {
         </div>
       </div>
 
-      {/* Key Metrics */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <div className="flex items-center gap-4">

@@ -5,22 +5,16 @@
 
 import type { Lead, LeadEngagement } from "@/lib/types";
 
-/**
- * Calculate engagement score (0-60 points)
- * Based on lead interactions and responsiveness
- */
 export function calculateEngagementScore(
   lead: Lead,
   engagements: LeadEngagement[] = []
 ): number {
   let score = 0;
 
-  // Base points for having any engagement
   if (engagements.length > 0) {
     score += 5;
   }
 
-  // Points for specific engagement types
   engagements.forEach((engagement) => {
     switch (engagement.type) {
       case "email_opened":
@@ -43,12 +37,10 @@ export function calculateEngagementScore(
     }
   });
 
-  // Bonus for multiple interactions
   if (engagements.length >= 3) {
     score += 10;
   }
 
-  // Bonus for recent engagement (within last 24 hours)
   const recentEngagements = engagements.filter((e) => {
     const hoursSince = (Date.now() - new Date(e.createdAt).getTime()) / (1000 * 60 * 60);
     return hoursSince <= 24;
@@ -58,28 +50,20 @@ export function calculateEngagementScore(
     score += 5;
   }
 
-  // Cap at 60
   return Math.min(score, 60);
 }
 
-/**
- * Calculate fit score (0-40 points)
- * Based on lead quality indicators
- */
 export function calculateFitScore(lead: Lead): number {
   let score = 0;
 
-  // Has clear funding amount (+10)
   if (lead.fundingAmount && lead.fundingAmount.trim() !== "") {
     score += 10;
   }
 
-  // Has business type/company (+10)
   if (lead.company && lead.company.trim() !== "") {
     score += 10;
   }
 
-  // Has detailed message (+10)
   if (lead.message && lead.message.length > 50) {
     score += 10;
   }
@@ -98,9 +82,6 @@ export function calculateFitScore(lead: Lead): number {
   return Math.min(score, 40);
 }
 
-/**
- * Calculate total lead score (0-100)
- */
 export function calculateLeadScore(
   lead: Lead,
   engagements: LeadEngagement[] = []
@@ -110,9 +91,6 @@ export function calculateLeadScore(
   return engagementScore + fitScore;
 }
 
-/**
- * Determine lead temperature based on score
- */
 export function getLeadTemperature(score: number): "hot" | "warm" | "cool" | "cold" {
   if (score >= 80) return "hot";
   if (score >= 60) return "warm";
@@ -120,9 +98,6 @@ export function getLeadTemperature(score: number): "hot" | "warm" | "cool" | "co
   return "cold";
 }
 
-/**
- * Update lead with calculated scores
- */
 export function updateLeadScores(
   lead: Lead,
   engagements: LeadEngagement[] = []
@@ -142,9 +117,6 @@ export function updateLeadScores(
   };
 }
 
-/**
- * Generate BusinessBlum signup URL with tracking
- */
 export function generateSignupUrl(lead: Lead): string {
   const baseUrl = "https://businessblum.com/login";
   
@@ -165,9 +137,6 @@ export function generateSignupUrl(lead: Lead): string {
   return `${baseUrl}?${params.toString()}`;
 }
 
-/**
- * Get recommended actions for a lead based on score
- */
 export function getRecommendedActions(lead: Lead): Array<{
   action: string;
   priority: "high" | "medium" | "low";
@@ -181,7 +150,6 @@ export function getRecommendedActions(lead: Lead): Array<{
 
   if (!lead.score) return actions;
 
-  // Hot leads
   if (lead.temperature === "hot") {
     actions.push({
       action: "Call Immediately",
@@ -198,7 +166,6 @@ export function getRecommendedActions(lead: Lead): Array<{
     }
   }
 
-  // Warm leads
   if (lead.temperature === "warm") {
     actions.push({
       action: "Follow Up Today",
@@ -215,7 +182,6 @@ export function getRecommendedActions(lead: Lead): Array<{
     }
   }
 
-  // Cool leads
   if (lead.temperature === "cool") {
     actions.push({
       action: "Send Educational Content",
@@ -224,7 +190,6 @@ export function getRecommendedActions(lead: Lead): Array<{
     });
   }
 
-  // Cold leads
   if (lead.temperature === "cold") {
     actions.push({
       action: "Re-engagement Campaign",
@@ -233,7 +198,6 @@ export function getRecommendedActions(lead: Lead): Array<{
     });
   }
 
-  // If no recent activity
   const daysSinceActivity = lead.lastActivityAt
     ? (Date.now() - new Date(lead.lastActivityAt).getTime()) / (1000 * 60 * 60 * 24)
     : 999;

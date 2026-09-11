@@ -5,21 +5,24 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Input, Button, Card } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
-import { Mail, Lock, User, Eye, EyeOff, Building, ArrowRight, Check, X } from "lucide-react";
+import { Mail, Lock, User, Phone, Eye, EyeOff, Building, ArrowRight, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { useRegister } from "@/hooks/useRegister";
+import { ApiError } from "@/lib/axiosInstance";
+import { setAuthData } from "@/lib/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { mutateAsync: register } = useRegister();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    company: "",
+    full_name: "",
+    work_email: "",
+    company_name: "",
+    work_phone: "",
     password: "",
-    confirmPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -29,14 +32,11 @@ export default function RegisterPage() {
     return emailRegex.test(email);
   };
 
-  const validateName = (name: string): boolean => {
-    const nameRegex = /^[a-zA-Z\s'-]+$/;
-    return nameRegex.test(name);
-  };
-
-  const validateCompany = (company: string): boolean => {
-    const companyRegex = /^[a-zA-Z0-9\s&.,'()-]+$/;
-    return companyRegex.test(company);
+  const validatePhone = (phone: string): boolean => {
+    // E.164-compatible: optional +, then 7–15 digits, spaces/dashes/parens allowed
+    const phoneRegex = /^\+?[\d\s\-().]{7,20}$/;
+    const digitsOnly = phone.replace(/\D/g, "");
+    return phoneRegex.test(phone) && digitsOnly.length >= 7 && digitsOnly.length <= 15;
   };
 
   const getPasswordStrength = (password: string) => {
@@ -60,43 +60,36 @@ export default function RegisterPage() {
   const passwordRequirements = [
     { label: "At least 8 characters", met: formData.password.length >= 8 },
     {
-      label: "Contains uppercase & lowercase",
+      label: "Uppercase & lowercase",
       met: /[a-z]/.test(formData.password) && /[A-Z]/.test(formData.password),
     },
     { label: "Contains a number", met: /[0-9]/.test(formData.password) },
-    { label: "Contains special character", met: /[^a-zA-Z0-9]/.test(formData.password) },
+    { label: "Special character", met: /[^a-zA-Z0-9]/.test(formData.password) },
   ];
 
   const validatePassword = (password: string): { isValid: boolean; message?: string } => {
     if (password.length < 8) {
       return { isValid: false, message: "Password must be at least 8 characters" };
     }
-
-    // Check maximum length (OWASP recommends 64-128 characters)
+    // OWASP recommends 64-128 characters maximum
     if (password.length > 128) {
       return { isValid: false, message: "Password must not exceed 128 characters" };
     }
-
     if (/\s/.test(password)) {
       return { isValid: false, message: "Password cannot contain spaces" };
     }
 
-    // Check password strength requirements (industry standard)
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
     const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
 
     // Require at least 3 out of 4 character types (balanced security)
-    const typesCount = [hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar].filter(
-      Boolean
-    ).length;
-
+    const typesCount = [hasUpperCase, hasLowerCase, hasNumber, hasSpecialChar].filter(Boolean).length;
     if (typesCount < 3) {
       return {
         isValid: false,
-        message:
-          "Password must contain at least 3 of: uppercase, lowercase, number, special character",
+        message: "Password must contain at least 3 of: uppercase, lowercase, number, special character",
       };
     }
 
@@ -105,40 +98,11 @@ export default function RegisterPage() {
     }
 
     const sequentialPatterns = [
-      "012",
-      "123",
-      "234",
-      "345",
-      "456",
-      "567",
-      "678",
-      "789",
-      "abc",
-      "bcd",
-      "cde",
-      "def",
-      "efg",
-      "fgh",
-      "ghi",
-      "hij",
-      "ijk",
-      "jkl",
-      "klm",
-      "lmn",
-      "mno",
-      "nop",
-      "opq",
-      "pqr",
-      "qrs",
-      "rst",
-      "stu",
-      "tuv",
-      "uvw",
-      "vwx",
-      "wxy",
-      "xyz",
+      "012","123","234","345","456","567","678","789",
+      "abc","bcd","cde","def","efg","fgh","ghi","hij",
+      "ijk","jkl","klm","lmn","mno","nop","opq","pqr",
+      "qrs","rst","stu","tuv","uvw","vwx","wxy","xyz",
     ];
-
     const lowerPassword = password.toLowerCase();
     for (const pattern of sequentialPatterns) {
       if (lowerPassword.includes(pattern)) {
@@ -155,43 +119,51 @@ export default function RegisterPage() {
 
     const newErrors: Record<string, string> = {};
 
-    // Full name validation
-    const trimmedName = formData.name.trim();
+    // full_name
+    const trimmedName = formData.full_name.trim();
     if (!trimmedName) {
-      newErrors.name = "Full name is required";
+      newErrors.full_name = "Full name is required";
     } else if (trimmedName.length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
+      newErrors.full_name = "Name must be at least 2 characters";
     } else if (trimmedName.length > 100) {
-      newErrors.name = "Name must not exceed 100 characters";
-    } else if (!validateName(trimmedName)) {
-      newErrors.name = "Name can only contain letters, spaces, hyphens, and apostrophes";
+      newErrors.full_name = "Name must not exceed 100 characters";
+    } else if (!/^[a-zA-Z\s'-]+$/.test(trimmedName)) {
+      newErrors.full_name = "Name can only contain letters, spaces, hyphens, and apostrophes";
     } else if (!/\s/.test(trimmedName)) {
-      newErrors.name = "Please enter your full name (first and last name)";
+      newErrors.full_name = "Please enter your full name (first and last name)";
     }
 
-    // Email validation
-    const trimmedEmail = formData.email.trim();
+    // work_email
+    const trimmedEmail = formData.work_email.trim();
     if (!trimmedEmail) {
-      newErrors.email = "Email is required";
+      newErrors.work_email = "Work email is required";
     } else if (trimmedEmail.length > 254) {
-      newErrors.email = "Email must not exceed 254 characters";
+      newErrors.work_email = "Email must not exceed 254 characters";
     } else if (!validateEmail(trimmedEmail)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.work_email = "Please enter a valid email address";
     }
 
-    // Company validation
-    const trimmedCompany = formData.company.trim();
+    // company_name
+    const trimmedCompany = formData.company_name.trim();
     if (!trimmedCompany) {
-      newErrors.company = "Company name is required";
+      newErrors.company_name = "Company name is required";
     } else if (trimmedCompany.length < 2) {
-      newErrors.company = "Company name must be at least 2 characters";
+      newErrors.company_name = "Company name must be at least 2 characters";
     } else if (trimmedCompany.length > 100) {
-      newErrors.company = "Company name must not exceed 100 characters";
-    } else if (!validateCompany(trimmedCompany)) {
-      newErrors.company = "Company name contains invalid characters";
+      newErrors.company_name = "Company name must not exceed 100 characters";
+    } else if (!/^[a-zA-Z0-9\s&.,'()-]+$/.test(trimmedCompany)) {
+      newErrors.company_name = "Company name contains invalid characters";
     }
 
-    // Password validation
+    // work_phone
+    const trimmedPhone = formData.work_phone.trim();
+    if (!trimmedPhone) {
+      newErrors.work_phone = "Work phone is required";
+    } else if (!validatePhone(trimmedPhone)) {
+      newErrors.work_phone = "Please enter a valid phone number";
+    }
+
+    // password
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else {
@@ -201,14 +173,7 @@ export default function RegisterPage() {
       }
     }
 
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    // Terms validation
+    // terms
     if (!agreeToTerms) {
       newErrors.terms = "You must agree to the terms and conditions";
     }
@@ -221,32 +186,33 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
-    // Simulate API call with toast promise
-    toast.promise(
-      new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({ name: formData.name });
-        }, 1500);
-      }),
-      {
-        loading: "Creating your account...",
-        success: () => {
-          setTimeout(() => {
-            router.push(ROUTES.DASHBOARD);
-          }, 500);
-          return "Account created successfully!";
-        },
-        error: "Registration failed. Please try again.",
-        finally: () => {
-          setIsLoading(false);
-        },
-      }
-    );
+    try {
+      const response = await register({
+        full_name: formData.full_name.trim(),
+        work_email: formData.work_email.trim(),
+        company_name: formData.company_name.trim(),
+        work_phone: formData.work_phone.trim(),
+        password: formData.password,
+      });
+
+      setAuthData(
+        response.data.tokens.access_token, 
+        response.data.tokens.refresh_token,
+        response.data.user_id ?? ""
+      );
+
+      toast.success(response.message);
+      router.push(ROUTES.LOGIN);
+    } catch (err) {
+      const error = err as ApiError;
+      toast.error(error.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors({ ...errors, [field]: "" });
     }
@@ -268,9 +234,9 @@ export default function RegisterPage() {
             label="Full Name"
             type="text"
             placeholder="John Doe"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            error={errors.name}
+            value={formData.full_name}
+            onChange={(e) => handleInputChange("full_name", e.target.value)}
+            error={errors.full_name}
             leftIcon={<User className="h-5 w-5" />}
             required
           />
@@ -280,9 +246,9 @@ export default function RegisterPage() {
             label="Work Email"
             type="email"
             placeholder="you@company.com"
-            value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            error={errors.email}
+            value={formData.work_email}
+            onChange={(e) => handleInputChange("work_email", e.target.value)}
+            error={errors.work_email}
             leftIcon={<Mail className="h-5 w-5" />}
             required
           />
@@ -292,10 +258,22 @@ export default function RegisterPage() {
             label="Company Name"
             type="text"
             placeholder="Acme Inc."
-            value={formData.company}
-            onChange={(e) => handleInputChange("company", e.target.value)}
-            error={errors.company}
+            value={formData.company_name}
+            onChange={(e) => handleInputChange("company_name", e.target.value)}
+            error={errors.company_name}
             leftIcon={<Building className="h-5 w-5" />}
+            required
+          />
+
+          <Input
+            variant="glass"
+            label="Work Phone"
+            type="tel"
+            placeholder="+1 (555) 000-0000"
+            value={formData.work_phone}
+            onChange={(e) => handleInputChange("work_phone", e.target.value)}
+            error={errors.work_phone}
+            leftIcon={<Phone className="h-5 w-5" />}
             required
           />
 
@@ -353,28 +331,6 @@ export default function RegisterPage() {
             )}
           </div>
 
-          <Input
-            variant="glass"
-            label="Confirm Password"
-            type={showConfirmPassword ? "text" : "password"}
-            placeholder="Re-enter your password"
-            value={formData.confirmPassword}
-            onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-            error={errors.confirmPassword}
-            leftIcon={<Lock className="h-5 w-5" />}
-            rightIcon={
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="text-white/70 transition-colors hover:text-white"
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-              >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            }
-            required
-          />
-
           <div className="space-y-0.5">
             <label className="group flex cursor-pointer items-start gap-2">
               <input
@@ -426,7 +382,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-1 gap-2.5">
           <button
             type="button"
             className="flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-white/5 px-3 py-2 backdrop-blur-sm transition-all hover:bg-white/10"
@@ -450,16 +406,6 @@ export default function RegisterPage() {
               />
             </svg>
             <span className="text-xs font-medium text-white">Google</span>
-          </button>
-
-          <button
-            type="button"
-            className="flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-white/5 px-3 py-2 backdrop-blur-sm transition-all hover:bg-white/10"
-          >
-            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-            </svg>
-            <span className="text-xs font-medium text-white">GitHub</span>
           </button>
         </div>
 

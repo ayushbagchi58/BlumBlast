@@ -36,7 +36,6 @@ export default function Pagination({
 
   return (
     <div className={cn("flex items-center justify-center gap-2", className)}>
-      {/* Previous Button */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -50,7 +49,6 @@ export default function Pagination({
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      {/* Page Numbers */}
       {visiblePages.map((page, index) => {
         if (page === "...") {
           return (
@@ -76,7 +74,6 @@ export default function Pagination({
         );
       })}
 
-      {/* Next Button */}
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}

@@ -32,7 +32,6 @@ export default function NurtureSequencesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Nurture Sequences</h1>
@@ -45,7 +44,6 @@ export default function NurtureSequencesPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <div className="flex items-center gap-4">
@@ -98,7 +96,6 @@ export default function NurtureSequencesPage() {
         </Card>
       </div>
 
-      {/* Info Card */}
       <Card className="bg-blue-50 border-blue-200">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 flex-shrink-0">
@@ -115,12 +112,10 @@ export default function NurtureSequencesPage() {
         </div>
       </Card>
 
-      {/* Sequences List */}
       <div className="grid gap-6 md:grid-cols-2">
         {sequences.map((sequence) => (
           <Card key={sequence.id} className="hover:shadow-lg transition-shadow">
             <div className="space-y-4">
-              {/* Header */}
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -143,7 +138,6 @@ export default function NurtureSequencesPage() {
                 </div>
               </div>
 
-              {/* Trigger */}
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-medium text-gray-700">Auto-enrolls:</span>
                 <Badge variant="default">
@@ -151,7 +145,6 @@ export default function NurtureSequencesPage() {
                 </Badge>
               </div>
 
-              {/* Steps */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">Sequence Steps:</p>
                 <div className="space-y-1">
@@ -181,7 +174,6 @@ export default function NurtureSequencesPage() {
                 </div>
               </div>
 
-              {/* Stats */}
               <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
                 <div>
                   <p className="text-xs text-gray-500">Enrolled</p>
@@ -199,7 +191,6 @@ export default function NurtureSequencesPage() {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-2 pt-2">
                 <Link href={`/nurture/${sequence.id}`} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full">
@@ -216,7 +207,6 @@ export default function NurtureSequencesPage() {
         ))}
       </div>
 
-      {/* How It Works */}
       <Card>
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">How Nurture Sequences Work</h3>

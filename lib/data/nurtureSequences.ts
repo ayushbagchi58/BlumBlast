@@ -412,8 +412,6 @@ export function getNurtureSequenceByIntent(intent?: string): NurtureSequence | u
  */
 export function personalizeMessage(content: string, lead: any): string {
   let personalized = content;
-
-  // Replace placeholders
   personalized = personalized.replace(/{firstName}/g, lead.firstName || "there");
   personalized = personalized.replace(/{lastName}/g, lead.lastName || "");
   personalized = personalized.replace(/{email}/g, lead.email || "");

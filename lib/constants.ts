@@ -5,6 +5,7 @@ export const ROUTES = {
   LOGIN: "/login",
   REGISTER: "/register",
   FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
   DASHBOARD: "/dashboard",
   LEADS: "/leads",
   LEAD_DETAIL: (id: string) => `/leads/${id}`,

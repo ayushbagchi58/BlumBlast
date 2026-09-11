@@ -13,20 +13,24 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useUpdateLeadStatus } from "@/hooks/useUpdateLeadStatus";
 
 interface QuickStageActionsProps {
   leadId: string;
+  leadUuid: string;
   leadName: string;
   onStageChange?: (stage: string) => void;
 }
 
 export function QuickStageActions({
   leadId,
+  leadUuid,
   leadName,
   onStageChange,
 }: QuickStageActionsProps) {
   const router = useRouter();
   const counterRef = useRef(0);
+  const updateStatusMutation = useUpdateLeadStatus();
 
   const generateUniqueId = useCallback(() => {
     counterRef.current += 1;
@@ -38,6 +42,30 @@ export function QuickStageActions({
     actionMessage: string,
     needsOpportunity: boolean = false
   ) => {
+    // Call API to update lead status
+    updateStatusMutation.mutate(
+      {
+        leadUuid,
+        payload: { stage },
+      },
+      {
+        onSuccess: (response) => {
+          // Show dynamic toast message from API response
+          toast.success(response.message || actionMessage);
+
+          if (onStageChange) {
+            onStageChange(stage);
+          }
+
+          // Refresh page to show updated stage
+          setTimeout(() => router.refresh(), 500);
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to update lead status");
+        },
+      }
+    );
+
     if (needsOpportunity) {
       // Check if opportunity already exists
       const savedOpportunities = localStorage.getItem("blum-blast-opportunities");
@@ -66,15 +94,6 @@ export function QuickStageActions({
           "blum-blast-opportunities",
           JSON.stringify(updatedOpportunities)
         );
-
-        toast.success(actionMessage);
-
-        if (onStageChange) {
-          onStageChange(stage);
-        }
-
-        // Refresh to show updated data
-        setTimeout(() => router.refresh(), 500);
       } else {
         // Get lead data to create better title
         const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
@@ -119,7 +138,7 @@ export function QuickStageActions({
           stage,
           value: numericValue, // Funding amount they requested
           fundingAmount: fundingAmount, // Keep original format
-          probability: stage === "contacted" ? 40 : stage === "proposal" ? 60 : stage === "negotiation" ? 80 : 25,
+          probability: stage === "Contacted" ? 40 : stage === "Proposal" ? 60 : stage === "Negotiation" ? 80 : 25,
           expectedCloseDate: null,
           notes: [`Created from quick action on ${new Date().toLocaleDateString()}`],
           assignedTo: "You",
@@ -129,41 +148,17 @@ export function QuickStageActions({
 
         opportunities.push(newOpportunity);
         localStorage.setItem("blum-blast-opportunities", JSON.stringify(opportunities));
-
-        toast.success(actionMessage);
-
-        if (onStageChange) {
-          onStageChange(stage);
-        }
-
-        // Refresh to show new data
-        setTimeout(() => router.refresh(), 500);
-      }
-    } else {
-      toast.success(actionMessage);
-
-      if (onStageChange) {
-        onStageChange(stage);
       }
     }
-  }, [leadId, leadName, router, onStageChange, generateUniqueId]);
+  }, [leadId, leadUuid, leadName, router, onStageChange, generateUniqueId, updateStatusMutation]);
 
   const actions = [
-    {
-      icon: <Target className="h-4 w-4" />,
-      label: "Mark as New",
-      description: "Just started talking",
-      color: "bg-blue-500 hover:bg-blue-600",
-      stage: "new",
-      message: `Created opportunity for ${leadName}!`,
-      needsOpportunity: true,
-    },
     {
       icon: <Phone className="h-4 w-4" />,
       label: "Mark as Contacted",
       description: "They replied back to you",
       color: "bg-purple-500 hover:bg-purple-600",
-      stage: "contacted",
+      stage: "Contacted",
       message: `Marked ${leadName} as contacted!`,
       needsOpportunity: true,
     },
@@ -172,7 +167,7 @@ export function QuickStageActions({
       label: "Send Proposal",
       description: "Share quote or funding offer",
       color: "bg-orange-500 hover:bg-orange-600",
-      stage: "proposal",
+      stage: "Proposal",
       message: `Moved ${leadName} to Proposal stage!`,
       needsOpportunity: true,
     },
@@ -181,7 +176,7 @@ export function QuickStageActions({
       label: "Start Negotiation",
       description: "Discussing terms with lead",
       color: "bg-yellow-500 hover:bg-yellow-600",
-      stage: "negotiation",
+      stage: "Negotiation",
       message: `Moved ${leadName} to Negotiation!`,
       needsOpportunity: true,
     },
@@ -190,7 +185,7 @@ export function QuickStageActions({
       label: "Mark as Won",
       description: "They signed up! 🎉",
       color: "bg-green-500 hover:bg-green-600",
-      stage: "closed_won",
+      stage: "Won",
       message: `🎉 ${leadName} converted to customer!`,
       needsOpportunity: true,
     },
@@ -199,7 +194,7 @@ export function QuickStageActions({
       label: "Mark as Lost",
       description: "Not interested right now",
       color: "bg-red-500 hover:bg-red-600",
-      stage: "closed_lost",
+      stage: "Lost",
       message: `Marked ${leadName} as lost`,
       needsOpportunity: true,
     },

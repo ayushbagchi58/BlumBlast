@@ -1,21 +1,92 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Settings, HelpCircle, Menu, X } from "lucide-react";
+import { Bell, Search, User, LogOut, Settings, HelpCircle, Menu, X, AlertTriangle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
 import Link from "next/link";
-import { mockUsers } from "@/lib/mockData";
 import { useSidebar } from "./MainLayout";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAdminById } from "@/hooks/useAdminById";
+import { clearAuthData, getUserId } from "@/lib/auth";
+
+function LogoutConfirmModal({
+  isOpen,
+  onCancel,
+  onConfirm,
+}: {
+  isOpen: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onCancel}
+      />
+      {/* Modal */}
+      <div className="relative w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-gray-900">Log out</h3>
+            <p className="text-sm text-gray-500">Are you sure you want to log out?</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+          >
+            Yes, log out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Header() {
+  const router = useRouter();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const { isCollapsed, isMobileMenuOpen, toggleMobileMenu } = useSidebar();
 
-  const currentUser = mockUsers[0];
+  const userId = getUserId();
+  const { data: adminData } = useAdminById(userId);
+  const currentUser = adminData?.data;
+
+  const handleLogoutClick = () => {
+    setIsUserMenuOpen(false);
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleLogoutCancel = () => {
+    setIsLogoutModalOpen(false);
+  };
+
+  const handleLogoutConfirm = () => {
+    setIsLogoutModalOpen(false);
+    clearAuthData();
+    toast.success("Logged out successfully");
+    router.push(ROUTES.LOGIN);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -40,6 +111,12 @@ export default function Header() {
   const unreadCount = mockNotifications.filter((n) => n.unread).length;
 
   return (
+    <>
+      <LogoutConfirmModal
+        isOpen={isLogoutModalOpen}
+        onCancel={handleLogoutCancel}
+        onConfirm={handleLogoutConfirm}
+      />
     <header
       className={cn(
         "fixed right-0 top-0 z-30 h-16 border-b border-gray-200 bg-white transition-all duration-300",
@@ -145,10 +222,10 @@ export default function Header() {
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-gray-100 sm:gap-3"
             >
-              {currentUser.avatar ? (
+              {currentUser?.avatar ? (
                 <img
                   src={currentUser.avatar}
-                  alt={`${currentUser.firstName} ${currentUser.lastName}`}
+                  alt={currentUser.full_name}
                   className="h-8 w-8 rounded-full"
                 />
               ) : (
@@ -157,8 +234,8 @@ export default function Header() {
                 </div>
               )}
               <div className="hidden text-left lg:block">
-                <p className="text-sm font-medium text-gray-900">{currentUser.firstName} {currentUser.lastName}</p>
-                <p className="text-xs capitalize text-gray-500">{currentUser.role}</p>
+                <p className="text-sm font-medium text-gray-900">{currentUser?.full_name ?? "—"}</p>
+                <p className="text-xs capitalize text-gray-500">Admin</p>
               </div>
             </button>
 
@@ -166,8 +243,8 @@ export default function Header() {
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-56 rounded-lg border border-gray-200 bg-white py-2 shadow-lg">
                 <div className="border-b border-gray-200 px-4 py-2">
-                  <p className="truncate font-medium text-gray-900">{currentUser.firstName} {currentUser.lastName}</p>
-                  <p className="truncate text-sm text-gray-500">{currentUser.email}</p>
+                  <p className="truncate font-medium text-gray-900">{currentUser?.full_name ?? "—"}</p>
+                  <p className="truncate text-sm text-gray-500">{currentUser?.work_email ?? "—"}</p>
                 </div>
                 <Link
                   href={ROUTES.PROFILE}
@@ -188,10 +265,7 @@ export default function Header() {
                 <hr className="my-2 border-gray-200" />
                 <button
                   className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
-                  onClick={() => {
-                    setIsUserMenuOpen(false);
-                    console.log("Logout clicked");
-                  }}
+                  onClick={handleLogoutClick}
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -202,5 +276,6 @@ export default function Header() {
         </div>
       </div>
     </header>
+    </>
   );
 }

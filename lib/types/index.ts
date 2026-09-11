@@ -1,8 +1,5 @@
 // Core Type Definitions for BlumBlast Internal Tool
 
-/**
- * Lead Status
- */
 export type LeadStatus = 
   | 'new'           // Just imported/created
   | 'contacted'     // Initial outreach done
@@ -11,9 +8,6 @@ export type LeadStatus =
   | 'unqualified'   // Does not meet criteria
   | 'converted';    // Became BusinessBlum customer
 
-/**
- * Lead Source - Inbound channels for Business Blum lead capture
- */
 export type LeadSource =
   | 'email'           // Email inquiry
   | 'sms'             // SMS message
@@ -24,9 +18,6 @@ export type LeadSource =
   | 'whatsapp'        // WhatsApp message
   | 'webchat';        // Website live chat
 
-/**
- * Lead Intent - What the lead is interested in
- */
 export type LeadIntent =
   | 'business_loan'
   | 'startup_funding'
@@ -37,9 +28,6 @@ export type LeadIntent =
   | 'debt_consolidation'
   | 'general_inquiry';
 
-/**
- * Lead - Inbound inquiry from multiple channels
- */
 export interface Lead {
   id: string;
   firstName: string;
@@ -86,14 +74,8 @@ export interface Lead {
   lastActivityAt?: Date;
 }
 
-/**
- * Campaign Channel
- */
 export type CampaignChannel = 'email' | 'sms' | 'both';
 
-/**
- * Campaign Status
- */
 export type CampaignStatus =
   | 'draft'           // Being created
   | 'scheduled'       // Scheduled for future send
@@ -102,9 +84,6 @@ export type CampaignStatus =
   | 'paused'          // Paused mid-send
   | 'cancelled';      // Cancelled before completion
 
-/**
- * Campaign - Bulk messaging to leads
- */
 export interface Campaign {
   id: string;
   name: string;
@@ -126,9 +105,6 @@ export interface Campaign {
   updatedAt: Date;
 }
 
-/**
- * Workflow Node Type
- */
 export type WorkflowNodeType =
   | 'trigger'        // Entry point (lead created, email opened, etc.)
   | 'action'         // Perform action (send email, update field, etc.)
@@ -136,18 +112,12 @@ export type WorkflowNodeType =
   | 'wait'           // Time delay
   | 'split';         // A/B test split
 
-/**
- * Workflow Status
- */
 export type WorkflowStatus =
   | 'draft'          // Being created
   | 'active'         // Running
   | 'paused'         // Temporarily stopped
   | 'archived';      // No longer in use
 
-/**
- * Workflow Node
- */
 export interface WorkflowNode {
   id: string;
   type: WorkflowNodeType;
@@ -157,9 +127,6 @@ export interface WorkflowNode {
   connections: string[];          // IDs of connected nodes
 }
 
-/**
- * Workflow - Automated lead nurturing sequence
- */
 export interface Workflow {
   id: string;
   name: string;
@@ -174,9 +141,6 @@ export interface Workflow {
   updatedAt: Date;
 }
 
-/**
- * Opportunity Stage
- */
 export type OpportunityStage =
   | 'new'            // Just qualified from leads
   | 'contacted'      // Initial contact made
@@ -185,9 +149,6 @@ export type OpportunityStage =
   | 'closed_won'     // Converted to BusinessBlum
   | 'closed_lost';   // Did not convert
 
-/**
- * Opportunity - Sales pipeline entry
- */
 export interface Opportunity {
   id: string;
   leadId: string;             // Associated lead
@@ -205,14 +166,8 @@ export interface Opportunity {
   updatedAt: Date;
 }
 
-/**
- * User Role
- */
 export type UserRole = 'admin' | 'manager' | 'agent';
 
-/**
- * User - Team member
- */
 export interface User {
   id: string;
   firstName: string;
@@ -231,9 +186,6 @@ export function getUserFullName(user: User): string {
   return `${user.firstName} ${user.lastName}`;
 }
 
-/**
- * Activity Type
- */
 export type ActivityType =
   | 'lead_created'
   | 'lead_updated'
@@ -246,9 +198,6 @@ export type ActivityType =
   | 'opportunity_stage_changed'
   | 'opportunity_closed';
 
-/**
- * Activity - System activity log
- */
 export interface Activity {
   id: string;
   type: ActivityType;
@@ -261,9 +210,6 @@ export interface Activity {
   createdAt: Date;
 }
 
-/**
- * Dashboard Metrics
- */
 export interface DashboardMetrics {
   newLeadsToday: number;
   newLeadsChange: number;          // Percentage change from yesterday
@@ -277,9 +223,6 @@ export interface DashboardMetrics {
   conversionRate: number;
 }
 
-/**
- * Campaign Analytics
- */
 export interface CampaignAnalytics {
   campaignId: string;
   sent: number;
@@ -315,9 +258,6 @@ export interface CampaignAnalytics {
   }>;
 }
 
-/**
- * Lead Score Configuration
- */
 export interface LeadScoringRule {
   id: string;
   name: string;
@@ -327,14 +267,8 @@ export interface LeadScoringRule {
   isActive: boolean;
 }
 
-/**
- * Template Type
- */
 export type TemplateType = 'email' | 'sms';
 
-/**
- * Template
- */
 export interface Template {
   id: string;
   name: string;
@@ -349,9 +283,6 @@ export interface Template {
   updatedAt: Date;
 }
 
-/**
- * Nurture Sequence Step
- */
 export interface NurtureStep {
   id: string;
   order: number;
@@ -362,9 +293,6 @@ export interface NurtureStep {
   isActive: boolean;
 }
 
-/**
- * Nurture Sequence - Automated follow-up sequence
- */
 export interface NurtureSequence {
   id: string;
   name: string;
@@ -381,9 +309,6 @@ export interface NurtureSequence {
   updatedAt: Date;
 }
 
-/**
- * Lead Engagement Event - Track interactions
- */
 export interface LeadEngagement {
   id: string;
   leadId: string;
@@ -393,9 +318,6 @@ export interface LeadEngagement {
   createdAt: Date;
 }
 
-/**
- * Conversion Analytics
- */
 export interface ConversionMetrics {
   totalLeads: number;
   convertedLeads: number;
@@ -417,18 +339,12 @@ export interface ConversionMetrics {
   }>;
 }
 
-/**
- * Segment Filter
- */
 export interface SegmentFilter {
   field: string;
   operator: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'greater_than' | 'less_than' | 'in' | 'not_in';
   value: any;
 }
 
-/**
- * Segment - For campaign targeting
- */
 export interface Segment {
   id: string;
   name: string;
@@ -440,9 +356,6 @@ export interface Segment {
   updatedAt: Date;
 }
 
-/**
- * Integration Type
- */
 export type IntegrationType = 
   | 'email_imap'
   | 'email_smtp'
@@ -450,9 +363,6 @@ export type IntegrationType =
   | 'sms_messagebird'
   | 'businessblum_api';
 
-/**
- * Integration - External service connection
- */
 export interface Integration {
   id: string;
   type: IntegrationType;
@@ -466,24 +376,12 @@ export interface Integration {
 
 // ─── Messaging & Conversations ────────────────────────────────────────────────
 
-/**
- * Message Channel Type
- */
 export type MessageChannel = LeadSource | 'agent';
 
-/**
- * Message Sender
- */
 export type MessageSender = 'lead' | 'agent' | 'system';
 
-/**
- * Message Type
- */
 export type MessageType = 'inbound' | 'outbound' | 'automated';
 
-/**
- * Message Status
- */
 export type MessageStatus =
   | 'sent'
   | 'delivered'
@@ -491,9 +389,6 @@ export type MessageStatus =
   | 'failed'
   | 'bounced';
 
-/**
- * Message - Individual email/SMS/social message
- */
 export interface Message {
   id: string;
   conversationId: string;
@@ -533,9 +428,6 @@ export interface Message {
   createdAt: Date;
 }
 
-/**
- * Conversation - Thread of messages with a lead
- */
 export interface Conversation {
   id: string;
   leadId: string;
@@ -567,9 +459,6 @@ export interface Conversation {
   updatedAt: Date;
 }
 
-/**
- * Conversation Filter Options
- */
 export interface ConversationFilter {
   status?: 'open' | 'resolved' | 'snoozed' | 'all';
   channel?: MessageChannel | 'all';
@@ -579,9 +468,6 @@ export interface ConversationFilter {
   searchQuery?: string;
 }
 
-/**
- * Bulk Reply Template
- */
 export interface ReplyTemplate {
   id: string;
   name: string;
@@ -595,9 +481,6 @@ export interface ReplyTemplate {
   updatedAt: Date;
 }
 
-/**
- * Campaign Analytics
- */
 export interface CampaignAnalytics {
   campaignId: string;
   totalSent: number;
@@ -620,4 +503,35 @@ export interface CampaignAnalytics {
   revenue: number;
   
   createdAt: Date;
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+export interface RegisterRequest {
+  data: {
+    full_name: string;
+    work_email: string;
+    company_name: string;
+    work_phone: string;
+    password: string;
+  };
+}
+
+export interface RegisterResponseData {
+  id: number;
+  user_id: string;
+  full_name: string;
+  company_name: string;
+  work_email: string;
+  tokens: {
+    access_token: string;
+    refresh_token: string;
+  };
+}
+
+export interface RegisterResponse {
+  code: number;
+  data: RegisterResponseData;
+  message: string;
+  failed: boolean;
 }

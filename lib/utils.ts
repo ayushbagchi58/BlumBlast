@@ -9,9 +9,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/**
- * Format date to readable string
- */
 export function formatDate(date: Date | string): string {
   const d = new Date(date);
   return new Intl.DateTimeFormat("en-US", {
@@ -21,9 +18,6 @@ export function formatDate(date: Date | string): string {
   }).format(d);
 }
 
-/**
- * Format date and time
- */
 export function formatDateTime(date: Date | string): string {
   const d = new Date(date);
   return new Intl.DateTimeFormat("en-US", {
@@ -35,16 +29,10 @@ export function formatDateTime(date: Date | string): string {
   }).format(d);
 }
 
-/**
- * Format number with commas
- */
 export function formatNumber(num: number): string {
   return new Intl.NumberFormat("en-US").format(num);
 }
 
-/**
- * Format currency
- */
 export function formatCurrency(amount: number, currency: string = "USD"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -52,24 +40,15 @@ export function formatCurrency(amount: number, currency: string = "USD"): string
   }).format(amount);
 }
 
-/**
- * Truncate text with ellipsis
- */
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + "...";
 }
 
-/**
- * Generate random ID
- */
 export function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
 }
 
-/**
- * Debounce function
- */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
@@ -86,16 +65,10 @@ export function debounce<T extends (...args: any[]) => any>(
   };
 }
 
-/**
- * Sleep/delay function
- */
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Check if value is empty (null, undefined, empty string, empty array, empty object)
- */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isEmpty(value: any): boolean {
   if (value == null) return true;

@@ -2,8 +2,6 @@
 
 import type { Message, Lead } from "@/lib/types";
 
-// ─── Sentiment Analysis ───────────────────────────────────────────────────────
-
 /**
  * Analyze message sentiment using keyword matching
  * In production, this would use an AI API (OpenAI, Anthropic, etc.)
@@ -11,7 +9,6 @@ import type { Message, Lead } from "@/lib/types";
 export function analyzeSentiment(message: string): "positive" | "neutral" | "negative" {
   const text = message.toLowerCase();
 
-  // Positive indicators
   const positiveKeywords = [
     "thanks",
     "thank you",
@@ -31,7 +28,6 @@ export function analyzeSentiment(message: string): "positive" | "neutral" | "neg
     "pleased",
   ];
 
-  // Negative indicators
   const negativeKeywords = [
     "no",
     "not interested",
@@ -57,8 +53,6 @@ export function analyzeSentiment(message: string): "positive" | "neutral" | "neg
   return "neutral";
 }
 
-// ─── Intent Detection ─────────────────────────────────────────────────────────
-
 /**
  * Detect what the lead is asking about
  * Returns intent keywords for routing/automation
@@ -66,7 +60,6 @@ export function analyzeSentiment(message: string): "positive" | "neutral" | "neg
 export function detectIntent(message: string): string | undefined {
   const text = message.toLowerCase();
 
-  // Intent mapping
   const intentPatterns: Record<string, string[]> = {
     business_loan: ["business loan", "small business", "sba loan", "business funding"],
     startup_funding: ["startup", "new business", "entrepreneur", "startup funding"],
@@ -89,8 +82,6 @@ export function detectIntent(message: string): string | undefined {
   return undefined;
 }
 
-// ─── Requires Response Detection ──────────────────────────────────────────────
-
 /**
  * Determine if message requires human response
  * Questions, concerns, negative sentiment = requires response
@@ -98,7 +89,6 @@ export function detectIntent(message: string): string | undefined {
 export function requiresResponse(message: string): boolean {
   const text = message.toLowerCase();
 
-  // Question indicators
   const hasQuestion =
     text.includes("?") ||
     text.startsWith("how ") ||
@@ -112,21 +102,17 @@ export function requiresResponse(message: string): boolean {
     text.includes("help") ||
     text.includes("question");
 
-  // Urgent indicators
   const isUrgent =
     text.includes("urgent") ||
     text.includes("asap") ||
     text.includes("immediately") ||
     text.includes("right now");
 
-  // Negative sentiment
   const sentiment = analyzeSentiment(message);
   const isNegative = sentiment === "negative";
 
   return hasQuestion || isUrgent || isNegative;
 }
-
-// ─── Auto-Reply Generation ────────────────────────────────────────────────────
 
 /**
  * Generate automatic reply based on message content
@@ -136,7 +122,6 @@ export function generateAutoReply(message: string, leadName: string): string | n
   const text = message.toLowerCase();
   const intent = detectIntent(message);
 
-  // Simple FAQ responses
   if (intent === "pricing_question") {
     return `Hi ${leadName}, great question! Our rates vary based on loan type and amount. For business loans, rates typically start at 7.5% APR for qualified applicants. Would you like me to connect you with a specialist who can provide a personalized quote?`;
   }
@@ -145,26 +130,21 @@ export function generateAutoReply(message: string, leadName: string): string | n
     return `Hi ${leadName}! Our application process is quick and easy:\n\n1. Complete online application (10 minutes)\n2. Submit documents\n3. Get decision within 24-48 hours\n\nMost loans under $25k get instant pre-approval. Ready to get started?`;
   }
 
-  // Positive sentiment - thank you message
   if (text.includes("thank") || text.includes("thanks")) {
     return `You're welcome, ${leadName}! We're here if you need anything else. 😊`;
   }
 
-  // Negative sentiment - escalate to human
   const sentiment = analyzeSentiment(message);
   if (sentiment === "negative") {
     return null; // Don't auto-reply, needs human attention
   }
 
-  // Default: acknowledge and offer help
   if (requiresResponse(message)) {
     return `Hi ${leadName}, thanks for your message! A team member will get back to you shortly. In the meantime, feel free to explore our resources at businessblum.com.`;
   }
 
   return null; // No auto-reply needed
 }
-
-// ─── Message Personalization ──────────────────────────────────────────────────
 
 /**
  * Replace template variables with lead data
@@ -192,35 +172,25 @@ export function personalizeMessage(template: string, lead: Lead): string {
   return personalized;
 }
 
-// ─── Lead Score Update based on Message ───────────────────────────────────────
-
-/**
- * Calculate score impact based on message engagement
- */
 export function calculateMessageScoreImpact(message: Message): number {
   let scoreImpact = 0;
 
-  // Inbound messages = engagement
   if (message.sender === "lead") {
-    scoreImpact += 5; // Base engagement score
+    scoreImpact += 5;
 
-    // Positive sentiment = higher score
     if (message.sentiment === "positive") {
       scoreImpact += 5;
     }
 
-    // Question shows interest
     if (message.body.includes("?")) {
       scoreImpact += 3;
     }
 
-    // Mentioned specific intent
     if (message.intent) {
       scoreImpact += 5;
     }
   }
 
-  // Outbound message clicked/opened
   if (message.sender === "agent") {
     if (message.readAt) {
       scoreImpact += 2; // Read = mild engagement
@@ -233,11 +203,6 @@ export function calculateMessageScoreImpact(message: Message): number {
   return scoreImpact;
 }
 
-// ─── Conversation Quality Metrics ─────────────────────────────────────────────
-
-/**
- * Calculate conversation health metrics
- */
 export function calculateConversationMetrics(messages: Message[]) {
   const totalMessages = messages.length;
   const inboundMessages = messages.filter((m) => m.sender === "lead").length;
@@ -245,10 +210,8 @@ export function calculateConversationMetrics(messages: Message[]) {
 
   const responseRate = totalMessages > 0 ? (inboundMessages / totalMessages) * 100 : 0;
 
-  // Average response time (mock - in production, calculate actual time between messages)
-  const avgResponseTime = "2h 30m"; // Mock value
+  const avgResponseTime = "2h 30m";
 
-  // Sentiment distribution
   const positiveCount = messages.filter((m) => m.sentiment === "positive").length;
   const neutralCount = messages.filter((m) => m.sentiment === "neutral").length;
   const negativeCount = messages.filter((m) => m.sentiment === "negative").length;
@@ -267,11 +230,6 @@ export function calculateConversationMetrics(messages: Message[]) {
   };
 }
 
-// ─── Smart Reply Suggestions ──────────────────────────────────────────────────
-
-/**
- * Generate quick reply suggestions for agents
- */
 export function generateReplySuggestions(
   lastMessage: Message,
   leadName: string
@@ -279,7 +237,6 @@ export function generateReplySuggestions(
   const text = lastMessage.body.toLowerCase();
   const suggestions: string[] = [];
 
-  // Question about rates
   if (text.includes("rate") || text.includes("interest") || text.includes("apr")) {
     suggestions.push(
       `Hi ${leadName}, our rates start at 7.5% APR for qualified applicants. Would you like a personalized quote?`
@@ -289,7 +246,6 @@ export function generateReplySuggestions(
     );
   }
 
-  // Question about timeline
   else if (
     text.includes("how long") ||
     text.includes("when") ||
@@ -303,7 +259,6 @@ export function generateReplySuggestions(
     );
   }
 
-  // Expressed interest
   else if (
     text.includes("interested") ||
     text.includes("yes") ||
@@ -315,7 +270,6 @@ export function generateReplySuggestions(
     suggestions.push(`Great! I'll send over the application link and guide you through it.`);
   }
 
-  // Default suggestions
   else {
     suggestions.push(`Thanks for reaching out, ${leadName}! How can I help you today?`);
     suggestions.push(
@@ -324,14 +278,9 @@ export function generateReplySuggestions(
     suggestions.push(`Let me connect you with a specialist who can help with that!`);
   }
 
-  return suggestions.slice(0, 3); // Return max 3 suggestions
+  return suggestions.slice(0, 3);
 }
 
-// ─── Unsubscribe/Opt-out Detection ────────────────────────────────────────────
-
-/**
- * Check if message contains unsubscribe request
- */
 export function isUnsubscribeRequest(message: string): boolean {
   const text = message.toLowerCase();
   const unsubscribeKeywords = [
@@ -351,15 +300,9 @@ export function isUnsubscribeRequest(message: string): boolean {
   return unsubscribeKeywords.some((keyword) => text.includes(keyword));
 }
 
-// ─── Spam Detection ───────────────────────────────────────────────────────────
-
-/**
- * Basic spam detection
- */
 export function isLikelySpam(message: string): boolean {
   const text = message.toLowerCase();
 
-  // Spam indicators
   const spamKeywords = [
     "click here now",
     "limited time offer",
@@ -374,11 +317,9 @@ export function isLikelySpam(message: string): boolean {
 
   const hasSpamKeywords = spamKeywords.some((keyword) => text.includes(keyword));
 
-  // Too many links
   const linkCount = (text.match(/http/g) || []).length;
   const hasTooManyLinks = linkCount > 3;
 
-  // All caps
   const capsPercentage = (message.match(/[A-Z]/g) || []).length / message.length;
   const isMostlyCaps = capsPercentage > 0.5 && message.length > 20;
 

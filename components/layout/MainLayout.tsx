@@ -41,7 +41,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
       }}
     >
       <div className="bg-gray-50">
-        {/* Mobile Overlay */}
         {isMobileMenuOpen && (
           <div
             className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
@@ -49,13 +48,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
           />
         )}
 
-        {/* Sidebar */}
         <Sidebar />
 
-        {/* Header */}
         <Header />
 
-        {/* Main Content + Footer */}
         <div
           className={cn(
             "flex flex-col transition-all duration-300",

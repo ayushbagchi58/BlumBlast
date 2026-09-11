@@ -5,9 +5,12 @@ import Link from "next/link";
 import { Button, Card, Badge } from "@/components/ui";
 import { mockOpportunities, mockLeads } from "@/lib/mockData";
 import type { Opportunity, OpportunityStage } from "@/lib/types";
-import { DollarSign, TrendingUp, Calendar } from "lucide-react";
+import { DollarSign, TrendingUp, Calendar, Phone, FileText, Handshake, CheckCircle, XCircle } from "lucide-react";
+import { useOpportunityStats } from "@/hooks/useOpportunityStats";
+import Loader from "@/components/ui/Loader";
+import { useAllLeads } from "@/hooks/useAllLeads";
 
-// Stage configuration
+// Stage configuration maps OpportunityStage to display config
 const STAGES: Record<
   OpportunityStage,
   { label: string; color: string; bgColor: string }
@@ -44,7 +47,6 @@ const STAGES: Record<
   },
 };
 
-// Map old stage names to new ones
 const stageMap: Record<string, OpportunityStage> = {
   'qualification': 'new',
   'new': 'new',
@@ -57,17 +59,24 @@ const stageMap: Record<string, OpportunityStage> = {
 
 export default function OpportunitiesPage() {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
+  
+  // Fetch opportunity stats from API
+  const { data: statsData, isLoading: isStatsLoading, error: statsError } = useOpportunityStats();
+  const stats = statsData?.result?.[0];
+
+  // Fetch all leads with is_opportunity filter
+  const { data: leadsData, isLoading: isLeadsLoading } = useAllLeads({
+    is_opportunity: "true",
+    per_page: 1000, // Get all opportunities
+  });
 
   const loadOpportunities = useCallback(() => {
     try {
-      // Load from localStorage
       const savedOpportunities = localStorage.getItem('blum-blast-opportunities');
       let allOpportunities: any[] = [];
 
       if (savedOpportunities) {
         const parsed = JSON.parse(savedOpportunities);
-        // Map stage names and ensure proper format
         allOpportunities = parsed.map((opp: any) => ({
           ...opp,
           stage: stageMap[opp.stage] || 'new',
@@ -76,7 +85,6 @@ export default function OpportunitiesPage() {
         }));
       }
 
-      // Add mock opportunities if no saved ones
       if (allOpportunities.length === 0) {
         allOpportunities = mockOpportunities;
       }
@@ -88,12 +96,10 @@ export default function OpportunitiesPage() {
     }
   }, []);
 
-  // Load opportunities from localStorage
   useEffect(() => {
     loadOpportunities();
   }, [loadOpportunities]);
 
-  // Group opportunities by stage for kanban view
   const opportunitiesByStage = Object.keys(STAGES).reduce(
     (acc, stage) => {
       acc[stage as OpportunityStage] = opportunities.filter(
@@ -104,7 +110,6 @@ export default function OpportunitiesPage() {
     {} as Record<OpportunityStage, Opportunity[]>
   );
 
-  // Calculate totals
   const totalValue = opportunities.reduce((sum, opp) => sum + opp.value, 0);
   const totalCount = opportunities.length;
   const wonCount = opportunities.filter((o) => o.stage === "closed_won").length;
@@ -113,7 +118,6 @@ export default function OpportunitiesPage() {
     .reduce((sum, o) => sum + o.value, 0);
 
   const getLeadName = (leadId: string) => {
-    // Try to get from localStorage first
     try {
       const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
       if (importedLeadsData) {
@@ -125,13 +129,11 @@ export default function OpportunitiesPage() {
       console.error("Error loading imported leads:", e);
     }
     
-    // Fallback to mock leads
     const lead = mockLeads.find((l) => l.id === leadId);
     return lead ? `${lead.firstName} ${lead.lastName}` : "Unknown Lead";
   };
 
   const getLeadCompany = (leadId: string) => {
-    // Try to get from localStorage first
     try {
       const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
       if (importedLeadsData) {
@@ -143,291 +145,381 @@ export default function OpportunitiesPage() {
       console.error("Error loading imported leads:", e);
     }
     
-    // Fallback to mock leads
     const lead = mockLeads.find((l) => l.id === leadId);
     return lead?.company || "";
   };
 
+  // Group leads by stage for pipeline
+  const pipelineStages = [
+    { key: "Contacted", label: "Contacted", icon: Phone, color: "purple" },
+    { key: "Proposal", label: "Proposal", icon: FileText, color: "orange" },
+    { key: "Negotiation", label: "Negotiation", icon: Handshake, color: "yellow" },
+    { key: "Won", label: "Won", icon: CheckCircle, color: "green" },
+    { key: "Lost", label: "Lost", icon: XCircle, color: "red" },
+  ];
+
+  const leadsByStage = pipelineStages.map((stage) => {
+    const stageLeads = leadsData?.result?.filter(
+      (lead) => lead.stage === stage.key
+    ) || [];
+    const stageValue = stageLeads.reduce((sum, lead) => sum + (lead.funding_amount || 0), 0);
+    return {
+      ...stage,
+      count: stageLeads.length,
+      value: stageValue,
+      leads: stageLeads,
+    };
+  });
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Opportunities</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Opportunities</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Track deals through your sales pipeline
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === "kanban" ? "primary" : "outline"}
-              onClick={() => setViewMode("kanban")}
-            >
-              Kanban
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "primary" : "outline"}
-              onClick={() => setViewMode("list")}
-            >
-              List
-            </Button>
-          </div>
+      </div>
+
+      {/* Opportunity Stats - API Integrated */}
+      {isStatsLoading ? (
+        <div className="flex justify-center py-12">
+          <Loader />
         </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Total Pipeline Value</p>
-              <p className="text-2xl font-bold text-gray-900">
-                ${totalValue.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">{totalCount} loan applications</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <DollarSign className="w-6 h-6 text-blue-600" />
-            </div>
-          </div>
+      ) : statsError ? (
+        <Card className="p-6 text-center">
+          <p className="text-red-600">Failed to load opportunity stats</p>
+          <p className="text-sm text-gray-500 mt-1">{statsError.message}</p>
         </Card>
-
-        <Card>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Approved This Month</p>
-              <p className="text-2xl font-bold text-green-600">
-                ${wonValue.toLocaleString()}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">{wonCount} loans</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+          {/* Total Pipeline Value */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">Total Pipeline Value</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-0.5 sm:mb-1 break-words">
+                  ${stats?.total_pipeline_value?.toLocaleString() || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">
+                  {stats?.loan_applications || 0} loan applications
+                </p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
             </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-green-600" />
+          </Card>
+
+          {/* Approved This Month */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">Approved This Month</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 mb-0.5 sm:mb-1 break-words">
+                  ${stats?.approved_this_month?.toLocaleString() || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">
+                  {stats?.loans_approved_this_month || 0} loans approved
+                </p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Approval Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {totalCount > 0 ? Math.round((wonCount / totalCount) * 100) : 0}%
-              </p>
-              <p className="text-sm text-gray-600 mt-1">All time</p>
+          {/* Approval Rate */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">Approval Rate</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600 mb-0.5 sm:mb-1 break-words">
+                  {stats?.approval_rate || 0}%
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">All time conversion</p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
             </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-purple-600" />
+          </Card>
+
+          {/* Average Loan Amount */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">Avg. Loan Amount</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-orange-600 mb-0.5 sm:mb-1 break-words">
+                  ${parseFloat(stats?.avg_loan_amount || "0").toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">Per application</p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-600 mb-1">Avg. Loan Amount</p>
-              <p className="text-2xl font-bold text-gray-900">
-                $
-                {totalCount > 0
-                  ? Math.round(totalValue / totalCount).toLocaleString()
-                  : 0}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">Per application</p>
+          {/* New Leads Pipeline */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">New Leads Pipeline</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600 mb-0.5 sm:mb-1 break-words">
+                  ${stats?.new_leads_total?.toLocaleString() || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">
+                  {stats?.new_leads_count || 0} new leads
+                </p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
             </div>
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <DollarSign className="w-6 h-6 text-orange-600" />
+          </Card>
+
+          {/* Proposal Stage */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">Proposal Stage</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-indigo-600 mb-0.5 sm:mb-1 break-words">
+                  ${stats?.proposal_leads_total?.toLocaleString() || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">
+                  {stats?.proposal_leads_count || 0} proposals sent
+                </p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
             </div>
-          </div>
-        </Card>
-      </div>
+          </Card>
 
-      {/* Kanban View */}
-      {viewMode === "kanban" && (
-        <div className="overflow-x-auto pb-4">
-          <div className="flex gap-4 min-w-max">
-            {(Object.keys(STAGES) as OpportunityStage[])
-              .filter((stage) => stage !== "closed_lost") // Hide lost in kanban
-              .map((stage) => {
-                const stageConfig = STAGES[stage];
-                const stageOpps = opportunitiesByStage[stage];
-                const stageValue = stageOpps.reduce(
-                  (sum, opp) => sum + opp.value,
-                  0
-                );
+          {/* Total Applications */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">Total Applications</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-teal-600 mb-0.5 sm:mb-1 break-words">
+                  {stats?.total_applications || 0}
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">All stages combined</p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+            </div>
+          </Card>
 
-                return (
-                  <div key={stage} className="w-80 flex-shrink-0">
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-sm font-semibold text-gray-900">
-                          {stageConfig.label}
-                        </h3>
-                        <Badge variant="default">{stageOpps.length}</Badge>
-                      </div>
-                      <p className="text-xs text-gray-600">
-                        Total loan amount: ${stageValue.toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div className="space-y-3">
-                      {stageOpps.length === 0 ? (
-                        <Card className="text-center py-8">
-                          <p className="text-sm text-gray-500">No deals</p>
-                        </Card>
-                      ) : (
-                        stageOpps.map((opp) => (
-                          <Link key={opp.id} href={`/opportunities/${opp.id}`}>
-                            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                              <div className="space-y-3">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 mb-1">
-                                    {getLeadName(opp.leadId)}
-                                  </h4>
-                                  {getLeadCompany(opp.leadId) && (
-                                    <p className="text-sm text-gray-600">
-                                      {getLeadCompany(opp.leadId)}
-                                    </p>
-                                  )}
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1 text-lg font-bold text-gray-900">
-                                    <DollarSign className="w-4 h-4" />
-                                    {opp.value.toLocaleString()}
-                                  </div>
-                                  <Badge
-                                    variant={
-                                      opp.probability >= 70
-                                        ? "success"
-                                        : opp.probability >= 40
-                                        ? "warning"
-                                        : "default"
-                                    }
-                                  >
-                                    {opp.probability}%
-                                  </Badge>
-                                </div>
-
-                                {opp.expectedCloseDate && (
-                                  <div className="flex items-center gap-1 text-xs text-gray-600">
-                                    <Calendar className="w-3 h-3" />
-                                    Expected:{" "}
-                                    {new Date(
-                                      opp.expectedCloseDate
-                                    ).toLocaleDateString()}
-                                  </div>
-                                )}
-
-                                {opp.notes.length > 0 && (
-                                  <p className="text-xs text-gray-600 line-clamp-2">
-                                    {opp.notes[opp.notes.length - 1]}
-                                  </p>
-                                )}
-                              </div>
-                            </Card>
-                          </Link>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+          {/* Conversion Rate */}
+          <Card className="hover:shadow-lg transition-shadow">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 leading-tight">Conversion Rate</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-rose-600 mb-0.5 sm:mb-1 break-words">
+                  {stats?.conversion_rate || 0}%
+                </p>
+                <p className="text-xs text-gray-500 mt-1 sm:mt-2">New leads to won</p>
+              </div>
+              <div className="p-2 sm:p-2.5 lg:p-3 bg-gradient-to-br from-rose-500 to-rose-600 rounded-lg sm:rounded-xl shadow-md flex-shrink-0">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
+              </div>
+            </div>
+          </Card>
         </div>
       )}
 
-      {/* List View */}
-      {viewMode === "list" && (
+      {/* Opportunity Pipeline */}
+      {isLeadsLoading ? (
+        <div className="flex justify-center py-12">
+          <Loader />
+        </div>
+      ) : (
         <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                    Opportunity
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                    Stage
-                  </th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">
-                    Value
-                  </th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-900">
-                    Probability
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                    Expected Close
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-900">
-                    Assigned To
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {opportunities.map((opp) => {
-                  const stageConfig = STAGES[opp.stage];
-                  return (
-                    <tr
-                      key={opp.id}
-                      className="border-b border-gray-100 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4">
-                        <Link href={`/opportunities/${opp.id}`}>
-                          <div className="cursor-pointer">
-                            <p className="font-medium text-gray-900 hover:text-blue-600">
-                              {getLeadName(opp.leadId)}
-                            </p>
-                            {getLeadCompany(opp.leadId) && (
-                              <p className="text-sm text-gray-600">
-                                {getLeadCompany(opp.leadId)}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge
-                          variant={
-                            opp.stage === "closed_won"
-                              ? "success"
-                              : opp.stage === "closed_lost"
-                              ? "error"
-                              : "default"
-                          }
-                        >
-                          {stageConfig.label}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold text-gray-900">
-                        ${opp.value.toLocaleString()}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <Badge
-                          variant={
-                            opp.probability >= 70
-                              ? "success"
-                              : opp.probability >= 40
-                              ? "warning"
-                              : "default"
-                          }
-                        >
-                          {opp.probability}%
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {opp.expectedCloseDate
-                          ? new Date(opp.expectedCloseDate).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-900">
-                        {opp.assignedTo}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Opportunity Pipeline</h2>
+            
+            {/* Pipeline Stages with Lead Cards */}
+            <div className="space-y-6 sm:space-y-8">
+              {leadsByStage.map((stage, index) => {
+                const Icon = stage.icon;
+                const isLast = index === leadsByStage.length - 1;
+                
+                const colorClasses = {
+                  purple: {
+                    bg: "bg-purple-100",
+                    icon: "text-purple-600",
+                    bar: "bg-purple-500",
+                    text: "text-purple-600",
+                    badge: "bg-purple-500",
+                  },
+                  orange: {
+                    bg: "bg-orange-100",
+                    icon: "text-orange-600",
+                    bar: "bg-orange-500",
+                    text: "text-orange-600",
+                    badge: "bg-orange-500",
+                  },
+                  yellow: {
+                    bg: "bg-yellow-100",
+                    icon: "text-yellow-600",
+                    bar: "bg-yellow-500",
+                    text: "text-yellow-600",
+                    badge: "bg-yellow-500",
+                  },
+                  green: {
+                    bg: "bg-green-100",
+                    icon: "text-green-600",
+                    bar: "bg-green-500",
+                    text: "text-green-600",
+                    badge: "bg-green-500",
+                  },
+                  red: {
+                    bg: "bg-red-100",
+                    icon: "text-red-600",
+                    bar: "bg-red-500",
+                    text: "text-red-600",
+                    badge: "bg-red-500",
+                  },
+                };
+
+                const colors = colorClasses[stage.color as keyof typeof colorClasses];
+
+                return (
+                  <div key={stage.key} className="relative">
+                    {/* Stage Header */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4">
+                      <div className={`p-2 sm:p-3 ${colors.bg} rounded-xl`}>
+                        <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${colors.icon}`} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900">{stage.label}</h3>
+                          <span className={`px-2 sm:px-3 py-1 rounded-full text-white text-xs sm:text-sm font-semibold ${colors.badge}`}>
+                            {stage.count}
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                          Total value: <span className="font-semibold">${stage.value.toLocaleString()}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Lead Cards */}
+                    {stage.leads.length === 0 ? (
+                      <div className="ml-0 sm:ml-16 p-4 sm:p-6 border-2 border-dashed border-gray-200 rounded-lg text-center">
+                        <p className="text-gray-500 text-xs sm:text-sm">No opportunities in this stage</p>
+                      </div>
+                    ) : (
+                      <div className="ml-0 sm:ml-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                        {stage.leads.map((lead) => (
+                          <Link
+                            key={lead.lead_uuid}
+                            href={`/leads/${lead.lead_uuid}`}
+                            className="block"
+                          >
+                            <div className="p-3 sm:p-4 border border-gray-200 rounded-lg hover:shadow-lg transition-shadow cursor-pointer bg-white">
+                              {/* Lead Name & Company */}
+                              <div className="mb-2 sm:mb-3">
+                                <h4 className="text-sm sm:text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors truncate">
+                                  {lead.first_name} {lead.last_name}
+                                </h4>
+                                {lead.company_name && (
+                                  <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">{lead.company_name}</p>
+                                )}
+                              </div>
+
+                              {/* Funding Details */}
+                              <div className="space-y-1 sm:space-y-2 mb-2 sm:mb-3">
+                                <div className="flex items-center justify-between text-xs sm:text-sm">
+                                  <span className="text-gray-600">Funding Type:</span>
+                                  <span className="font-medium text-gray-900 text-right truncate ml-2">
+                                    {lead.funding_type || "N/A"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between text-xs sm:text-sm">
+                                  <span className="text-gray-600">Amount:</span>
+                                  <span className="font-bold text-blue-600">
+                                    ${lead.funding_amount?.toLocaleString() || "0"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Probability & Expected Close */}
+                              <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-gray-100">
+                                <div className="flex items-center gap-1 sm:gap-2">
+                                  <span className="text-xs text-gray-600">Probability:</span>
+                                  <span
+                                    className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs font-semibold ${
+                                      parseInt(lead.probability) >= 80
+                                        ? "bg-green-100 text-green-700"
+                                        : parseInt(lead.probability) >= 60
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : parseInt(lead.probability) >= 40
+                                        ? "bg-orange-100 text-orange-700"
+                                        : "bg-gray-100 text-gray-700"
+                                    }`}
+                                  >
+                                    {lead.probability}%
+                                  </span>
+                                </div>
+                                {lead.expected_close && (
+                                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                                    <Calendar className="w-3 h-3 flex-shrink-0" />
+                                    <span className="truncate">{new Date(lead.expected_close).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Connector Line */}
+                    {!isLast && (
+                      <div className="flex items-center ml-4 sm:ml-8 my-4 sm:my-6">
+                        <div className="w-0.5 h-6 sm:h-8 bg-gray-300"></div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pipeline Summary */}
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="text-center p-3 sm:p-4 bg-blue-50 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Opportunities</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">
+                    {leadsByStage.reduce((sum, s) => sum + s.count, 0)}
+                  </p>
+                </div>
+                <div className="text-center p-3 sm:p-4 bg-green-50 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Total Pipeline Value</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">
+                    ${leadsByStage.reduce((sum, s) => sum + s.value, 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center p-3 sm:p-4 bg-purple-50 rounded-lg">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">Win Rate</p>
+                  <p className="text-xl sm:text-2xl font-bold text-purple-600">
+                    {leadsByStage.reduce((sum, s) => sum + s.count, 0) > 0
+                      ? Math.round(
+                          (leadsByStage.find((s) => s.key === "Won")?.count || 0) /
+                            leadsByStage.reduce((sum, s) => sum + s.count, 0) *
+                            100
+                        )
+                      : 0}
+                    %
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
       )}

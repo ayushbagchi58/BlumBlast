@@ -9,9 +9,6 @@ import type {
   User,
 } from "./types";
 
-/**
- * Mock Users
- */
 export const mockUsers: User[] = [
   {
     id: "user-1",
@@ -48,9 +45,6 @@ export const mockUsers: User[] = [
   },
 ];
 
-/**
- * Mock Dashboard Metrics
- */
 export const mockDashboardMetrics: DashboardMetrics = {
   newLeadsToday: 47,
   newLeadsChange: 23,
@@ -64,9 +58,6 @@ export const mockDashboardMetrics: DashboardMetrics = {
   conversionRate: 12.5,
 };
 
-/**
- * Mock Leads
- */
 export const mockLeads: Lead[] = [
   {
     id: "lead-1",
@@ -210,9 +201,6 @@ export const mockLeads: Lead[] = [
   },
 ];
 
-/**
- * Mock Campaigns
- */
 export const mockCampaigns: Campaign[] = [
   {
     id: "campaign-1",
@@ -271,9 +259,6 @@ export const mockCampaigns: Campaign[] = [
   },
 ];
 
-/**
- * Mock Workflows
- */
 export const mockWorkflows: Workflow[] = [
   {
     id: "workflow-1",
@@ -377,9 +362,6 @@ export const mockWorkflows: Workflow[] = [
   },
 ];
 
-/**
- * Mock Opportunities
- */
 export const mockOpportunities: Opportunity[] = [
   {
     id: "opp-1",
@@ -446,9 +428,6 @@ export const mockOpportunities: Opportunity[] = [
   },
 ];
 
-/**
- * Mock Activities
- */
 export const mockActivities: Activity[] = [
   {
     id: "activity-1",
@@ -522,47 +501,29 @@ export const mockActivities: Activity[] = [
   },
 ];
 
-/**
- * Helper function to get a random subset of leads
- */
 export function getRandomLeads(count: number = 5): Lead[] {
   const shuffled = [...mockLeads].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, Math.min(count, mockLeads.length));
 }
 
-/**
- * Helper function to filter leads by status
- */
 export function getLeadsByStatus(status: Lead["status"]): Lead[] {
   return mockLeads.filter((lead) => lead.status === status);
 }
 
-/**
- * Helper function to get hot leads (score > 80)
- */
 export function getHotLeads(): Lead[] {
   return mockLeads.filter((lead) => lead.status === "qualified" || lead.status === "engaged");
 }
 
-/**
- * Helper function to get opportunities by stage
- */
 export function getOpportunitiesByStage(stage: Opportunity["stage"]): Opportunity[] {
   return mockOpportunities.filter((opp) => opp.stage === stage);
 }
 
-/**
- * Helper function to get recent activities
- */
 export function getRecentActivities(count: number = 10): Activity[] {
   return mockActivities
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, count);
 }
 
-/**
- * Mock Campaign Performance Data (for analytics charts)
- */
 export const mockCampaignPerformanceData = [
   { date: "Week 1", opens: 245, clicks: 89, conversions: 23 },
   { date: "Week 2", opens: 312, clicks: 124, conversions: 34 },
@@ -570,9 +531,6 @@ export const mockCampaignPerformanceData = [
   { date: "Week 4", opens: 356, clicks: 142, conversions: 41 },
 ];
 
-/**
- * Mock Lead Source Data (for analytics charts)
- */
 export const mockLeadSourceData = [
   { source: "Email Inbound", count: 456, percentage: 42 },
   { source: "SMS Inbound", count: 234, percentage: 22 },
