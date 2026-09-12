@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useUpdateLeadStatus } from "@/hooks/useUpdateLeadStatus";
+import { ROUTES } from "@/lib/constants";
 
 interface QuickStageActionsProps {
   leadId: string;
@@ -57,8 +58,10 @@ export function QuickStageActions({
             onStageChange(stage);
           }
 
-          // Refresh page to show updated stage
-          setTimeout(() => router.refresh(), 500);
+          // Redirect to opportunities page after successful stage update
+          setTimeout(() => {
+            router.push(ROUTES.OPPORTUNITIES);
+          }, 500);
         },
         onError: (error) => {
           toast.error(error.message || "Failed to update lead status");

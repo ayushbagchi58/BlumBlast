@@ -4,12 +4,17 @@ import { useState } from "react";
 import { Card, Button, Input } from "@/components/ui";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { LeadSource, LeadIntent } from "@/lib/types";
 import { useCreateLead } from "@/hooks/useCreateLead";
 import { ApiError } from "@/lib/axiosInstance";
+import { ROUTES } from "@/lib/constants";
 
 export default function CaptureInquiryPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const { mutate: createLead, isPending } = useCreateLead();
 
   const [formData, setFormData] = useState({
@@ -44,17 +49,11 @@ export default function CaptureInquiryPage() {
       {
         onSuccess: (response) => {
           toast.success(response.message);
-          setFormData({
-            lead_type: "Email" as LeadSource,
-            first_name: "",
-            last_name: "",
-            email: "",
-            phone_number: "",
-            company_name: "",
-            funding_type: "Business Loan" as LeadIntent,
-            funding_amount: "",
-            message: "",
-          });
+          // Invalidate all leads queries to refetch fresh data
+          queryClient.invalidateQueries({ queryKey: ["leads"] });
+          queryClient.invalidateQueries({ queryKey: ["allLeads"] });
+          queryClient.invalidateQueries({ queryKey: ["recentLeads"] });
+          router.push(ROUTES.LEADS);
         },
         onError: (error: ApiError) => {
           toast.error(error.message || "Failed to capture inquiry. Please try again.");

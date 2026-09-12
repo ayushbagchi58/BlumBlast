@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "BlumBlast - Customer Acquisition Engine for BusinessBlum",
   description:
     "Centralized platform to ingest leads from email and SMS, engage at scale with bulk messaging, and convert prospects into BusinessBlum customers through intelligent automation.",
@@ -32,10 +33,16 @@ export const metadata: Metadata = {
     "crm automation",
   ],
   authors: [{ name: "BlumBlast Team" }],
+  icons: {
+    icon: "/images/logoBlumBlast.png",
+    shortcut: "/images/logoBlumBlast.png",
+    apple: "/images/logoBlumBlast.png",
+  },
   openGraph: {
     title: "BlumBlast - Customer Acquisition Engine",
     description: "Transform leads into BusinessBlum customers with intelligent automation",
     type: "website",
+    images: ["/images/logoBlumBlast.png"],
   },
 };
 
