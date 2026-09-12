@@ -115,19 +115,21 @@ export default function CaptureInquiryPage() {
           />
 
           <Input
-            label="Company Name (Optional)"
+            label="Company Name"
+            required
             value={formData.company_name}
             onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
           />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Funding Type
+              Funding Type <span className="text-red-500">*</span>
             </label>
             <select
               className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={formData.funding_type}
               onChange={(e) => setFormData({ ...formData, funding_type: e.target.value as LeadIntent })}
+              required
             >
               <option value="Business Loan">Business Loan</option>
               <option value="Startup Funding">Startup Funding</option>
@@ -141,15 +143,16 @@ export default function CaptureInquiryPage() {
           </div>
 
           <Input
-            label="Funding Amount (Optional)"
+            label="Funding Amount"
             placeholder="e.g., 50000"
+            required
             value={formData.funding_amount}
             onChange={(e) => setFormData({ ...formData, funding_amount: e.target.value })}
           />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Message / Inquiry Details
+              Message / Inquiry Details <span className="text-red-500">*</span>
             </label>
             <textarea
               className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
