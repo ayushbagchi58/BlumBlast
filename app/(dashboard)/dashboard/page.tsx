@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardHeader, CardBody, Badge, Button } from "@/components/ui";
-import { mockLeads } from "@/lib/mockData";
 import type { Lead } from "@/lib/types";
 import {
   Users,

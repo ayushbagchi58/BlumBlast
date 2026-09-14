@@ -15,7 +15,6 @@ export const ROUTES = {
   CAMPAIGN_DETAIL: (id: string) => `/campaigns/${id}`,
   OPPORTUNITIES: "/opportunities",
   OPPORTUNITY_DETAIL: (id: string) => `/opportunities/${id}`,
-  ANALYTICS: "/analytics",
   SETTINGS: "/settings",
   PROFILE: "/settings/profile",
   TEAM: "/settings/team",

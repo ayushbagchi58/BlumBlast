@@ -50,11 +50,6 @@ const navigationItems: NavItem[] = [
     icon: <Target className="h-5 w-5" />,
   },
   {
-    label: "Analytics",
-    href: ROUTES.ANALYTICS,
-    icon: <BarChart3 className="h-5 w-5" />,
-  },
-  {
     label: "Settings",
     href: ROUTES.SETTINGS,
     icon: <Settings className="h-5 w-5" />,

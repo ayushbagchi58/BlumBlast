@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button, Card, Badge } from "@/components/ui";
-import { mockOpportunities, mockLeads } from "@/lib/mockData";
 import type { Opportunity, OpportunityStage } from "@/lib/types";
 import { DollarSign, TrendingUp, Calendar, Phone, FileText, Handshake, CheckCircle, XCircle } from "lucide-react";
 import { useOpportunityStats } from "@/hooks/useOpportunityStats";
