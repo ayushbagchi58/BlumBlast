@@ -18,9 +18,9 @@ export function useUpdateLeadStatus() {
       queryClient.invalidateQueries({
         queryKey: LEAD_BY_UUID_QUERY_KEY(variables.leadUuid),
       });
-      // Also invalidate the all leads list
+      // Invalidate all leads queries (including ones with different filters)
       queryClient.invalidateQueries({
-        queryKey: ["leads", "all"],
+        queryKey: ["leads"],
       });
     },
   });

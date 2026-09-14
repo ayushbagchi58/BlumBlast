@@ -8,9 +8,9 @@ export function useImportLead() {
   return useMutation<ImportLeadResponse, ApiError, ImportLeadPayload>({
     mutationFn: (payload: ImportLeadPayload) => importLead(payload),
     onSuccess: () => {
-      // Invalidate leads query to refetch and show imported data instantly
+      // Invalidate all leads queries to refetch and show imported data instantly
       queryClient.invalidateQueries({
-        queryKey: ["leads", "all"],
+        queryKey: ["leads"],
       });
     },
   });
