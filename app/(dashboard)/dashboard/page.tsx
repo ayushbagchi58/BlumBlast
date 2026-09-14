@@ -156,19 +156,17 @@ export default function DashboardPage() {
     const loadLeads = () => {
       try {
         const importedLeadsData = localStorage.getItem("blum-blast-imported-leads");
-        let allLeads = [...mockLeads];
+        let allLeads: Lead[] = [];
         
         if (importedLeadsData) {
           const importedLeads = JSON.parse(importedLeadsData);
-          const mockLeadIds = new Set(mockLeads.map(l => l.id));
-          const uniqueImportedLeads = importedLeads.filter((lead: Lead) => !mockLeadIds.has(lead.id));
-          allLeads = [...uniqueImportedLeads, ...mockLeads];
+          allLeads = [...importedLeads];
         }
         
         setLeads(allLeads);
       } catch (e) {
         console.error("Error loading leads:", e);
-        setLeads(mockLeads);
+        setLeads([]);
       }
     };
     
