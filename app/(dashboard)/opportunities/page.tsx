@@ -63,11 +63,15 @@ export default function OpportunitiesPage() {
   const { data: statsData, isLoading: isStatsLoading, error: statsError } = useOpportunityStats();
   const stats = statsData?.result?.[0];
 
-  // Fetch all leads with is_opportunity filter
-  const { data: leadsData, isLoading: isLeadsLoading } = useAllLeads({
-    is_opportunity: "true",
+  // Fetch all leads with opportunity stages (Contacted, Proposal, Negotiation, Won, Lost)
+  const { data: leadsData, isLoading: isLeadsLoading, refetch } = useAllLeads({
     per_page: 1000, // Get all opportunities
   });
+
+  // Refetch on mount to ensure fresh data
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const loadOpportunities = useCallback(() => {
     try {
@@ -84,14 +88,10 @@ export default function OpportunitiesPage() {
         }));
       }
 
-      if (allOpportunities.length === 0) {
-        allOpportunities = mockOpportunities;
-      }
-
       setOpportunities(allOpportunities);
     } catch (e) {
       console.error("Error loading opportunities:", e);
-      setOpportunities(mockOpportunities);
+      setOpportunities([]);
     }
   }, []);
 
@@ -128,8 +128,7 @@ export default function OpportunitiesPage() {
       console.error("Error loading imported leads:", e);
     }
     
-    const lead = mockLeads.find((l) => l.id === leadId);
-    return lead ? `${lead.firstName} ${lead.lastName}` : "Unknown Lead";
+    return "Unknown Lead";
   };
 
   const getLeadCompany = (leadId: string) => {
@@ -144,8 +143,7 @@ export default function OpportunitiesPage() {
       console.error("Error loading imported leads:", e);
     }
     
-    const lead = mockLeads.find((l) => l.id === leadId);
-    return lead?.company || "";
+    return "";
   };
 
   // Group leads by stage for pipeline

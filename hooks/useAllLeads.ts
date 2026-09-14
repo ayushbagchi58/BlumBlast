@@ -10,5 +10,8 @@ export function useAllLeads(filters: LeadsFilters) {
     queryKey: ALL_LEADS_QUERY_KEY(filters),
     queryFn: () => getAllLeads(filters),
     placeholderData: (prev) => prev,
+    staleTime: 0, // Always consider data stale
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnMount: true, // Always refetch on mount
   });
 }
